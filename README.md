@@ -20,7 +20,7 @@ learning-agent/
 ├── requirements.txt         # Python 依赖
 ├── env.example              # 环境变量示例
 ├── setup.sh                 # 项目初始化脚本（macOS/Linux）
-├── setup.bat                # 项目初始化脚本（Windows）
+├── run.sh                   # 应用启动脚本（macOS/Linux）
 ├── .gitignore
 └── README.md                # 项目说明
 ```
@@ -30,13 +30,16 @@ learning-agent/
 ### 方式一：使用自动化脚本（推荐）
 
 **macOS/Linux:**
-```bash
-./setup.sh
-```
 
-**Windows:**
-```cmd
-setup.bat
+```bash
+# 1. 初始化项目（创建虚拟环境并安装依赖）
+./setup.sh
+
+# 2. 配置环境变量（编辑 .env 文件，填入 API Key）
+# 编辑 .env 文件
+
+# 3. 启动应用
+./run.sh
 ```
 
 ### 方式二：手动设置
@@ -78,7 +81,14 @@ API_PORT=8000
 
 ### 4. 运行应用
 
+**重要：运行前必须先激活虚拟环境！**
+
 ```bash
+# 激活虚拟环境（如果还没激活）
+source venv/bin/activate  # macOS/Linux
+# 或
+venv\Scripts\activate     # Windows
+
 # 方式1：使用 uvicorn 直接运行
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
@@ -86,9 +96,16 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 python -m app.main
 ```
 
+**或者使用启动脚本（自动激活虚拟环境）：**
+
+```bash
+./run.sh  # macOS/Linux
+```
+
 ### 5. 访问 API 文档
 
 启动后访问：
+
 - Swagger UI: http://localhost:8000/docs
 - ReDoc: http://localhost:8000/redoc
 
@@ -147,6 +164,44 @@ curl -X POST "http://localhost:8000/chat/simple?message=你好"
 - **httpx**: 异步 HTTP 客户端
 - **pydantic**: 数据验证和设置管理
 - **uvicorn**: ASGI 服务器
+
+## 故障排除
+
+### ModuleNotFoundError: No module named 'pydantic_settings'
+
+**原因：** 运行应用时没有激活虚拟环境，或者使用了系统 Python 而不是虚拟环境中的 Python。
+
+**解决方法：**
+
+```bash
+# 确保激活虚拟环境
+source venv/bin/activate  # macOS/Linux
+
+# 然后运行应用
+uvicorn app.main:app --reload
+# 或使用启动脚本
+./run.sh
+```
+
+### 安装依赖失败（pydantic-core 编译错误）
+
+**原因：** Python 版本过新（如 Python 3.14），缺少预编译的 wheel 包。
+
+**解决方法：**
+
+1. 使用 Python 3.11 或 3.12（推荐）
+2. 或者安装 Rust 工具链来编译 pydantic-core
+3. 或者等待更新的 pydantic 版本支持你的 Python 版本
+
+### 如何检查虚拟环境是否激活
+
+激活虚拟环境后，命令行提示符前会显示 `(venv)`：
+
+```bash
+(venv) user@host:~/learning-agent$
+```
+
+如果没有看到 `(venv)`，说明虚拟环境未激活。
 
 ## 学习资源
 
