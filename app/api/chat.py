@@ -1,7 +1,9 @@
 """对话 API 端点"""
+from typing import Any, Dict, List, Optional, Union
+
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
-from typing import List, Optional
+
 from app.models.llm_client import DoubaoClient
 
 router = APIRouter(prefix="/chat", tags=["chat"])
@@ -21,14 +23,20 @@ def get_llm_client() -> DoubaoClient:
 class Message(BaseModel):
     """消息模型"""
     role: str = Field(..., description="消息角色：user, assistant, system")
-    content: str = Field(..., description="消息内容")
+    content: Union[str, List[Dict[str, Any]]
+                   ] = Field(..., description="消息内容，可以是字符串或多模态内容数组")
 
 
 class ChatRequest(BaseModel):
     """聊天请求模型"""
     messages: List[Message] = Field(..., description="消息列表")
     temperature: float = Field(0.7, ge=0.0, le=2.0, description="温度参数，控制随机性")
-    max_tokens: Optional[int] = Field(None, gt=0, description="最大生成 token 数")
+    max_tokens: Optional[int] = Field(
+        None, gt=0, description="最大生成 token 数（兼容参数，实际使用 max_completion_tokens）")
+    max_completion_tokens: Optional[int] = Field(
+        None, gt=0, description="最大完成 token 数（火山引擎 API 参数）")
+    reasoning_effort: Optional[str] = Field(
+        None, description="推理努力程度：low, medium, high")
     stream: bool = Field(False, description="是否流式返回")
 
 
@@ -42,15 +50,16 @@ class ChatResponse(BaseModel):
 async def chat(request: ChatRequest):
     """
     对话接口
-    
+
     接收用户消息，调用 AI 模型生成回复
     """
     try:
         client = get_llm_client()
-        
+
         # 转换消息格式
-        messages = [{"role": msg.role, "content": msg.content} for msg in request.messages]
-        
+        messages = [{"role": msg.role, "content": msg.content}
+                    for msg in request.messages]
+
         # 调用 LLM
         if request.stream:
             # 流式响应（这里简化处理，返回完整内容）
@@ -59,7 +68,9 @@ async def chat(request: ChatRequest):
             async for chunk in client.chat_stream(
                 messages,
                 temperature=request.temperature,
-                max_tokens=request.max_tokens
+                max_tokens=request.max_tokens,
+                max_completion_tokens=request.max_completion_tokens,
+                reasoning_effort=request.reasoning_effort
             ):
                 content += chunk
         else:
@@ -67,14 +78,16 @@ async def chat(request: ChatRequest):
                 messages,
                 temperature=request.temperature,
                 max_tokens=request.max_tokens,
+                max_completion_tokens=request.max_completion_tokens,
+                reasoning_effort=request.reasoning_effort,
                 stream=False
             )
-        
+
         return ChatResponse(
             content=content,
             model=client.model_name
         )
-        
+
     except Exception as e:
         raise HTTPException(
             status_code=500,
@@ -86,20 +99,20 @@ async def chat(request: ChatRequest):
 async def chat_simple(message: str = Query(..., description="用户消息")):
     """
     简化版对话接口
-    
+
     直接接收字符串消息，返回 AI 回复
     """
     try:
         client = get_llm_client()
-        
+
         messages = [{"role": "user", "content": message}]
         content = await client.chat(messages)
-        
+
         return {
             "message": content,
             "model": client.model_name
         }
-        
+
     except Exception as e:
         raise HTTPException(
             status_code=500,

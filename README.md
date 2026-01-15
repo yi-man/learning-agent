@@ -72,12 +72,14 @@ pip install -r requirements.txt
 # 火山引擎 API 配置
 DOUBAO_API_KEY=your_api_key_here
 DOUBAO_API_ENDPOINT=https://ark.cn-beijing.volces.com/api/v3/chat/completions
-DOUBAO_MODEL_NAME=doubao-lite-128k
+DOUBAO_MODEL_NAME=doubao-seed-1-6-lite-251015
 
 # FastAPI 配置
 API_HOST=0.0.0.0
 API_PORT=8000
 ```
+
+**注意：** 模型名称 `doubao-seed-1-6-lite-251015` 是示例，请根据你在火山引擎控制台实际可用的模型名称进行配置。
 
 ### 4. 运行应用
 
@@ -113,6 +115,8 @@ python -m app.main
 
 ### 标准对话接口
 
+**基础文本对话：**
+
 ```bash
 curl -X POST "http://localhost:8000/chat" \
   -H "Content-Type: application/json" \
@@ -120,7 +124,36 @@ curl -X POST "http://localhost:8000/chat" \
     "messages": [
       {"role": "user", "content": "你好，请介绍一下你自己"}
     ],
-    "temperature": 0.7
+    "temperature": 0.7,
+    "max_completion_tokens": 2000
+  }'
+```
+
+**多模态对话（图片+文本）：**
+
+```bash
+curl -X POST "http://localhost:8000/chat" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "image_url",
+            "image_url": {
+              "url": "https://example.com/image.jpg"
+            }
+          },
+          {
+            "type": "text",
+            "text": "图片主要讲了什么?"
+          }
+        ]
+      }
+    ],
+    "max_completion_tokens": 65535,
+    "reasoning_effort": "medium"
   }'
 ```
 
@@ -129,6 +162,15 @@ curl -X POST "http://localhost:8000/chat" \
 ```bash
 curl -X POST "http://localhost:8000/chat/simple?message=你好"
 ```
+
+### API 参数说明
+
+- `messages`: 消息列表，支持文本或多模态内容
+- `temperature`: 温度参数，控制随机性（0.0-2.0）
+- `max_completion_tokens`: 最大完成 token 数（火山引擎 API 参数）
+- `max_tokens`: 兼容参数，会自动转换为 `max_completion_tokens`
+- `reasoning_effort`: 推理努力程度，可选值：`low`, `medium`, `high`
+- `stream`: 是否流式返回
 
 ## 核心设计
 
