@@ -16,21 +16,52 @@ learning-agent/
 │   └── api/
 │       ├── __init__.py
 │       └── chat.py          # 对话 API 端点
+├── venv/                    # Python 虚拟环境（运行 setup.sh 后生成）
 ├── requirements.txt         # Python 依赖
-├── .env.example            # 环境变量示例
+├── env.example              # 环境变量示例
+├── setup.sh                 # 项目初始化脚本（macOS/Linux）
+├── setup.bat                # 项目初始化脚本（Windows）
 ├── .gitignore
-└── README.md               # 项目说明
+└── README.md                # 项目说明
 ```
 
 ## 快速开始
 
-### 1. 安装依赖
+### 方式一：使用自动化脚本（推荐）
+
+**macOS/Linux:**
+```bash
+./setup.sh
+```
+
+**Windows:**
+```cmd
+setup.bat
+```
+
+### 方式二：手动设置
+
+#### 1. 创建虚拟环境
+
+```bash
+# 创建 venv 虚拟环境
+python -m venv venv
+
+# 激活虚拟环境
+# macOS/Linux:
+source venv/bin/activate
+
+# Windows:
+venv\Scripts\activate
+```
+
+#### 2. 安装依赖
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2. 配置环境变量
+### 3. 配置环境变量
 
 创建 `.env` 文件（参考 `.env.example`）：
 
@@ -45,7 +76,7 @@ API_HOST=0.0.0.0
 API_PORT=8000
 ```
 
-### 3. 运行应用
+### 4. 运行应用
 
 ```bash
 # 方式1：使用 uvicorn 直接运行
@@ -55,7 +86,7 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 python -m app.main
 ```
 
-### 4. 访问 API 文档
+### 5. 访问 API 文档
 
 启动后访问：
 - Swagger UI: http://localhost:8000/docs
