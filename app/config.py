@@ -11,9 +11,10 @@ class Settings(BaseSettings):
     api_key: str
     api_endpoint: str = "https://ark.cn-beijing.volces.com/api/v3/chat/completions"
     model_name: str = "doubao-seed-1-6-lite-251015"  # 默认模型，可在 .env 中覆盖
-    
+
     # OpenAI SDK 配置（可选，用于兼容 OpenAI API 格式的模型）
-    base_url: Optional[str] = None  # 如果配置，OpenAI SDK 将使用此 base_url；否则使用默认 OpenAI API
+    # 如果配置，OpenAI SDK 将使用此 base_url；否则使用默认 OpenAI API
+    base_url: Optional[str] = None
 
     # FastAPI 配置
     api_host: str = "0.0.0.0"

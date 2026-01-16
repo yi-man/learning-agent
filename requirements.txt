@@ -5,3 +5,7 @@ pydantic>=2.10.0
 pydantic-settings>=2.6.0
 python-dotenv>=1.0.0
 openai>=2.15.0
+# 网络请求基础库
+requests
+# Tavily搜索工具（AI Agent常用）
+tavily-python
