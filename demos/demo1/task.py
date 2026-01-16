@@ -1,8 +1,13 @@
-import re
 import os
-from weather import get_weather
+import re
+
+from dotenv import load_dotenv
+from llm_client import OpenAICompatibleClient
 from search_attraction import get_attraction
-from openai import OpenAICompatibleClient
+from weather import get_weather
+
+# 加载 .env 文件中的环境变量
+load_dotenv()
 
 AGENT_SYSTEM_PROMPT = """
 你是一个智能旅行助手。你的任务是分析用户的请求，并使用可用工具一步步地解决问题。
@@ -30,12 +35,13 @@ available_tools = {
 
 
 # --- 1. 配置LLM客户端 ---
-# 请根据您使用的服务，将这里替换成对应的凭证和地址
-API_KEY = "YOUR_API_KEY"
-BASE_URL = "YOUR_BASE_URL"
-MODEL_ID = "YOUR_MODEL_ID"
-TAVILY_API_KEY = "YOUR_Tavily_KEY"
-os.environ['TAVILY_API_KEY'] = "YOUR_TAVILY_API_KEY"
+# 从 .env 文件加载配置
+API_KEY = os.getenv("API_KEY")
+BASE_URL = os.getenv("BASE_URL")
+MODEL_ID = os.getenv("MODEL_NAME")
+TAVILY_API_KEY = "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"
+if TAVILY_API_KEY:
+    os.environ['TAVILY_API_KEY'] = TAVILY_API_KEY
 
 llm = OpenAICompatibleClient(
     model=MODEL_ID,
