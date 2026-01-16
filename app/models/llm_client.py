@@ -198,10 +198,18 @@ class DoubaoClient(BaseLLMClient):
                             continue
 
         except httpx.HTTPStatusError as e:
+            error_detail = ""
+            try:
+                error_json = e.response.json()
+                if "error" in error_json:
+                    error_detail = f" - {error_json['error']}"
+            except:
+                error_detail = f" - {e.response.text[:200]}"
             raise Exception(
-                f"API request failed with status {e.response.status_code}: {e.response.text}")
+                f"API request failed with status {e.response.status_code}{error_detail}")
         except Exception as e:
-            raise Exception(f"Error calling Doubao API: {str(e)}")
+            error_msg = str(e) if str(e) else repr(e)
+            raise Exception(f"Error calling Doubao API (stream): {error_msg}")
 
     async def close(self):
         """关闭客户端连接"""
