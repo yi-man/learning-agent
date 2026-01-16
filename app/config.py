@@ -7,10 +7,13 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     """应用配置"""
 
-    # 火山引擎 API 配置
-    doubao_api_key: str
-    doubao_api_endpoint: str = "https://ark.cn-beijing.volces.com/api/v3/chat/completions"
-    doubao_model_name: str = "doubao-seed-1-6-lite-251015"  # 默认模型，可在 .env 中覆盖
+    # API 配置（通用配置，可用于各种模型提供者）
+    api_key: str
+    api_endpoint: str = "https://ark.cn-beijing.volces.com/api/v3/chat/completions"
+    model_name: str = "doubao-seed-1-6-lite-251015"  # 默认模型，可在 .env 中覆盖
+    
+    # OpenAI SDK 配置（可选，用于兼容 OpenAI API 格式的模型）
+    base_url: Optional[str] = None  # 如果配置，OpenAI SDK 将使用此 base_url；否则使用默认 OpenAI API
 
     # FastAPI 配置
     api_host: str = "0.0.0.0"
