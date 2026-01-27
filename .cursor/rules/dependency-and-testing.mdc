@@ -1,0 +1,112 @@
+---
+description: 依赖管理和测试验证规则 - 确保依赖一致性和代码质量
+alwaysApply: true
+---
+
+# 依赖管理和测试验证规则
+
+## 规则 1: 依赖安装必须通过 requirements.txt
+
+**严格要求：** 所有 Python 依赖包的安装必须通过 `requirements.txt` 文件管理，禁止直接使用 `pip install package` 命令。
+
+### 正确流程
+
+1. **更新 requirements.txt**
+   - 添加新依赖时，先更新 `requirements.txt` 文件
+   - 指定版本号（如 `pytest>=7.0.0`）
+   - 添加注释说明依赖用途（如 `# 测试依赖`）
+
+2. **安装依赖**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+### 禁止的操作
+
+- ❌ 直接运行 `pip install pytest`
+- ❌ 跳过更新 `requirements.txt` 直接安装包
+- ❌ 在代码中假设依赖已安装而不更新 requirements.txt
+
+### 原因
+
+- **一致性**：确保所有环境（开发、测试、生产）使用相同的依赖版本
+- **可追溯性**：requirements.txt 是依赖的单一真实来源
+- **可重现性**：其他人可以通过 requirements.txt 重建相同的环境
+
+## 规则 2: 代码完成后必须进行自测
+
+**严格要求：** 完成代码编写后，必须安装依赖并运行测试进行验证，确保代码能够正常工作。
+
+### 正确流程
+
+1. **更新依赖文件**
+   - 如果添加了新依赖，先更新 `requirements.txt`
+
+2. **安装依赖**
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **运行测试验证**
+
+   ```bash
+   # 运行所有测试
+   pytest -v
+
+   # 或运行特定测试文件
+   pytest tests/test_new_feature.py -v
+   ```
+
+4. **验证通过后再提交**
+   - 确保所有测试通过
+   - 确保没有语法错误
+   - 确保没有导入错误
+
+### 禁止的操作
+
+- ❌ 编写代码后不运行测试就声称完成
+- ❌ 假设依赖已安装而不验证
+- ❌ 跳过测试验证步骤
+
+### 原因
+
+- **质量保证**：及早发现问题和错误
+- **避免返工**：在提交前发现问题比提交后修复更高效
+- **可靠性**：确保代码在真实环境中能够运行
+
+## 完整工作流程示例
+
+当添加新功能或修改代码时：
+
+```bash
+# 1. 更新 requirements.txt（如果需要新依赖）
+# 编辑 requirements.txt，添加新依赖
+
+# 2. 安装依赖
+pip install -r requirements.txt
+
+# 3. 编写代码
+# ... 编写代码 ...
+
+# 4. 运行测试验证
+pytest -v
+
+# 5. 确认测试通过后，再进行后续操作（提交、部署等）
+```
+
+## 特殊情况
+
+- **开发环境设置**：首次设置项目时，运行 `pip install -r requirements.txt` 安装所有依赖
+- **CI/CD**：持续集成环境也应使用 `pip install -r requirements.txt` 安装依赖
+- **文档更新**：如果添加了新的依赖，记得更新 README.md 中的安装说明
+
+## 检查清单
+
+在完成任何代码修改后，确认：
+
+- [ ] 所有新依赖已添加到 `requirements.txt`
+- [ ] 已运行 `pip install -r requirements.txt` 安装依赖
+- [ ] 已运行 `pytest -v` 验证测试通过
+- [ ] 没有语法错误或导入错误
+- [ ] 代码能够正常运行

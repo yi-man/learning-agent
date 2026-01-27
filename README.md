@@ -265,11 +265,30 @@ Superpowers 是一套完整的软件开发工作流，基于可组合的 "skills
 
 ### 安装 Superpowers Skills
 
-Skills 已预装在项目中，位于 `.cursor/skills/` 目录。如果需要更新或重新安装：
+Skills 已预装在项目中，位于 `.cursor/skills/` 目录。
+
+**首次安装或更新：**
 
 ```bash
+# 方式一：使用安装脚本（自动检测安装/更新）
 ./scripts/install-superpowers.sh
+
+# 方式二：使用更新脚本（快捷方式）
+./scripts/update-superpowers.sh
 ```
+
+**脚本功能：**
+- ✅ 自动检测是否已安装（首次安装 vs 更新）
+- ✅ 更新时自动备份现有 skills 到 `.cursor/skills.backup.YYYYMMDD_HHMMSS/`
+- ✅ 从 GitHub 下载最新版本
+- ✅ 显示版本信息（Commit hash 和日期）
+- ✅ 列出所有已安装的 skills
+
+**更新说明：**
+- 🔄 可以随时重新运行脚本获取最新版本
+- 💾 更新时会自动备份，备份目录格式：`.cursor/skills.backup.YYYYMMDD_HHMMSS/`
+- ↩️ 如需恢复旧版本，可以手动复制备份目录的内容回 `.cursor/skills/`
+- 🗑️ 备份目录可以安全删除（确认新版本正常后）
 
 ### 核心工作流
 

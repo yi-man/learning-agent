@@ -9,3 +9,7 @@ openai>=2.15.0
 requests
 # Tavily搜索工具（AI Agent常用）
 tavily-python
+# 测试依赖
+pytest>=7.0.0
+pytest-asyncio>=0.21.0
+pytest-mock>=3.10.0
