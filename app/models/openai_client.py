@@ -14,7 +14,8 @@ class OpenAIClient(BaseLLMClient):
         self,
         api_key: Optional[str] = None,
         base_url: Optional[str] = None,
-        model_name: Optional[str] = None
+        model_name: Optional[str] = None,
+        timeout: Optional[int] = None
     ):
         """
         初始化 OpenAI 客户端
@@ -23,14 +24,17 @@ class OpenAIClient(BaseLLMClient):
             api_key: API 密钥，默认从配置读取
             base_url: API 基础 URL，默认从配置读取。如果未配置，将使用 OpenAI 官方 API
             model_name: 模型名称，默认从配置读取
+            timeout: 请求超时时间（秒），默认从配置读取
         """
-        self.api_key = api_key or settings.api_key
-        self.base_url = base_url or settings.base_url
-        self.model_name = model_name or settings.model_name
+        self.api_key = api_key or settings.llm_api_key
+        self.base_url = base_url or settings.llm_base_url
+        self.model_name = model_name or settings.llm_model_id
+        self.timeout = timeout if timeout is not None else settings.llm_timeout
 
         # 初始化 OpenAI 客户端
         client_kwargs = {
             "api_key": self.api_key,
+            "timeout": self.timeout,
         }
         if self.base_url:
             client_kwargs["base_url"] = self.base_url

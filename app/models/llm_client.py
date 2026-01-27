@@ -74,10 +74,10 @@ class DoubaoClient(BaseLLMClient):
             api_endpoint: API 端点，默认从配置读取
             model_name: 模型名称，默认从配置读取
         """
-        self.api_key = api_key or settings.api_key
-        self.api_endpoint = api_endpoint or settings.api_endpoint
-        self.model_name = model_name or settings.model_name
-        self.client = httpx.AsyncClient(timeout=60.0)
+        self.api_key = api_key or settings.llm_api_key
+        self.api_endpoint = api_endpoint or settings.llm_api_endpoint
+        self.model_name = model_name or settings.llm_model_id
+        self.client = httpx.AsyncClient(timeout=float(settings.llm_timeout))
 
     async def chat(
         self,

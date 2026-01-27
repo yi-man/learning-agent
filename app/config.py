@@ -7,14 +7,17 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     """应用配置"""
 
-    # API 配置（通用配置，可用于各种模型提供者）
-    api_key: str
-    api_endpoint: str = "https://ark.cn-beijing.volces.com/api/v3/chat/completions"
-    model_name: str = "doubao-seed-1-6-lite-251015"  # 默认模型，可在 .env 中覆盖
+    # LLM API 配置（通用配置，可用于各种模型提供者）
+    llm_api_key: str
+    llm_api_endpoint: str = "https://ark.cn-beijing.volces.com/api/v3/chat/completions"
+    llm_model_id: str = "doubao-seed-1-6-lite-251015"  # 默认模型，可在 .env 中覆盖
 
     # OpenAI SDK 配置（可选，用于兼容 OpenAI API 格式的模型）
     # 如果配置，OpenAI SDK 将使用此 base_url；否则使用默认 OpenAI API
-    base_url: Optional[str] = None
+    llm_base_url: Optional[str] = None
+    
+    # LLM 请求超时配置
+    llm_timeout: int = 60
 
     # FastAPI 配置
     api_host: str = "0.0.0.0"
