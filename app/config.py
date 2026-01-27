@@ -30,4 +30,5 @@ class Settings(BaseSettings):
 
 
 # 全局配置实例
-settings = Settings()
+# pydantic BaseSettings 会从环境变量读取配置，mypy 无法识别此行为
+settings = Settings()  # type: ignore[call-arg]

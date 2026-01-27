@@ -143,7 +143,7 @@ class DoubaoClient(BaseLLMClient):
         except Exception as e:
             raise Exception(f"Error calling Doubao API: {str(e)}")
 
-    async def chat_stream(
+    async def chat_stream(  # type: ignore[override,misc]
         self,
         messages: List[Dict[str, Any]],
         temperature: float = 0.7,

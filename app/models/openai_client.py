@@ -33,14 +33,14 @@ class OpenAIClient(BaseLLMClient):
         self.timeout = timeout if timeout is not None else settings.llm_timeout
 
         # 初始化 OpenAI 客户端
-        client_kwargs = {
+        client_kwargs: Dict[str, Any] = {
             "api_key": self.api_key,
             "timeout": self.timeout,
         }
         if self.base_url:
             client_kwargs["base_url"] = self.base_url
 
-        self.client = AsyncOpenAI(**client_kwargs)
+        self.client = AsyncOpenAI(**client_kwargs)  # type: ignore[call-overload]
 
     async def chat(
         self,
@@ -66,7 +66,7 @@ class OpenAIClient(BaseLLMClient):
             return full_response
 
         # 构建请求参数
-        request_params = {
+        request_params: Dict[str, Any] = {
             "model": self.model_name,
             "messages": messages,
             "temperature": temperature,
@@ -83,7 +83,7 @@ class OpenAIClient(BaseLLMClient):
             request_params["reasoning_effort"] = reasoning_effort
 
         try:
-            response = await self.client.chat.completions.create(**request_params)
+            response = await self.client.chat.completions.create(**request_params)  # type: ignore[call-overload]
 
             # 解析响应
             if response.choices and len(response.choices) > 0:
@@ -95,7 +95,7 @@ class OpenAIClient(BaseLLMClient):
             error_msg = str(e) if str(e) else repr(e)
             raise Exception(f"Error calling OpenAI API: {error_msg}")
 
-    async def chat_stream(
+    async def chat_stream(  # type: ignore[override,misc]
         self,
         messages: List[Dict[str, Any]],
         temperature: float = 0.7,
@@ -105,7 +105,7 @@ class OpenAIClient(BaseLLMClient):
     ) -> AsyncIterator[str]:
         """流式发送聊天请求"""
         # 构建请求参数
-        request_params = {
+        request_params: Dict[str, Any] = {
             "model": self.model_name,
             "messages": messages,
             "temperature": temperature,
@@ -123,7 +123,7 @@ class OpenAIClient(BaseLLMClient):
             request_params["reasoning_effort"] = reasoning_effort
 
         try:
-            stream = await self.client.chat.completions.create(**request_params)
+            stream = await self.client.chat.completions.create(**request_params)  # type: ignore[call-overload]
 
             async for chunk in stream:
                 if chunk.choices and len(chunk.choices) > 0:
