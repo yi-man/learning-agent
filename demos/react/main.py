@@ -13,7 +13,13 @@ class HelloAgentsLLM:
     它用于调用任何兼容OpenAI接口的服务，并默认使用流式响应。
     """
 
-    def __init__(self, model: str = None, apiKey: str = None, baseUrl: str = None, timeout: int = None):
+    def __init__(
+        self,
+        model: str = None,
+        apiKey: str = None,
+        baseUrl: str = None,
+        timeout: int = None,
+    ):
         """
         初始化客户端。优先使用传入参数，如果未提供，则从环境变量加载。
         """
@@ -56,14 +62,16 @@ class HelloAgentsLLM:
 
 
 # --- 客户端使用示例 ---
-if __name__ == '__main__':
+if __name__ == "__main__":
     try:
         llmClient = HelloAgentsLLM()
 
         exampleMessages = [
-            {"role": "system",
-                "content": "You are a helpful assistant that writes Python code."},
-            {"role": "user", "content": "写一个快速排序算法"}
+            {
+                "role": "system",
+                "content": "You are a helpful assistant that writes Python code.",
+            },
+            {"role": "user", "content": "写一个快速排序算法"},
         ]
 
         print("--- 调用LLM ---")

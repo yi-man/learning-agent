@@ -19,8 +19,7 @@ def get_attraction(city: str, weather: str) -> str:
 
     try:
         # 4. 调用API，include_answer=True会返回一个综合性的回答
-        response = tavily.search(
-            query=query, search_depth="basic", include_answer=True)
+        response = tavily.search(query=query, search_depth="basic", include_answer=True)
 
         # 5. Tavily返回的结果已经非常干净，可以直接使用
         # response['answer'] 是一个基于所有搜索结果的总结性回答
@@ -30,8 +29,7 @@ def get_attraction(city: str, weather: str) -> str:
         # 如果没有综合性回答，则格式化原始结果
         formatted_results = []
         for result in response.get("results", []):
-            formatted_results.append(
-                f"- {result['title']}: {result['content']}")
+            formatted_results.append(f"- {result['title']}: {result['content']}")
 
         if not formatted_results:
             return "抱歉，没有找到相关的旅游景点推荐。"

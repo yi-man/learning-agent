@@ -1,12 +1,16 @@
 """OpenAI SDK 对话 API 端点"""
+
 from typing import Any, Dict, List, Optional, Union
 
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
 
-from app.api.chat_history import (add_message, clear_history,
-                                  generate_session_id,
-                                  merge_history_and_messages)
+from app.api.chat_history import (
+    add_message,
+    clear_history,
+    generate_session_id,
+    merge_history_and_messages,
+)
 from app.models.openai_client import OpenAIClient
 
 router = APIRouter(prefix="/chat/openai", tags=["chat-openai"])
@@ -25,29 +29,35 @@ def get_openai_client() -> OpenAIClient:
 
 class Message(BaseModel):
     """消息模型"""
+
     role: str = Field(..., description="消息角色：user, assistant, system")
-    content: Union[str, List[Dict[str, Any]]
-                   ] = Field(..., description="消息内容，可以是字符串或多模态内容数组")
+    content: Union[str, List[Dict[str, Any]]] = Field(
+        ..., description="消息内容，可以是字符串或多模态内容数组"
+    )
 
 
 class ChatRequest(BaseModel):
     """聊天请求模型"""
+
     messages: List[Message] = Field(..., description="消息列表")
     session_id: Optional[str] = Field(
-        None, description="会话 ID，用于维护对话上下文。如果不提供，将创建新会话")
+        None, description="会话 ID，用于维护对话上下文。如果不提供，将创建新会话"
+    )
     temperature: float = Field(0.7, ge=0.0, le=2.0, description="温度参数，控制随机性")
-    max_tokens: Optional[int] = Field(
-        None, gt=0, description="最大生成 token 数")
+    max_tokens: Optional[int] = Field(None, gt=0, description="最大生成 token 数")
     max_completion_tokens: Optional[int] = Field(
-        None, gt=0, description="最大完成 token 数（兼容参数）")
+        None, gt=0, description="最大完成 token 数（兼容参数）"
+    )
     reasoning_effort: Optional[str] = Field(
-        None, description="推理努力程度：low, medium, high")
+        None, description="推理努力程度：low, medium, high"
+    )
     stream: bool = Field(False, description="是否流式返回")
     clear_history: bool = Field(False, description="是否清除历史对话")
 
 
 class ChatResponse(BaseModel):
     """聊天响应模型"""
+
     content: str = Field(..., description="AI 回复内容")
     model: str = Field(..., description="使用的模型名称")
     session_id: str = Field(..., description="会话 ID，用于后续对话")
@@ -73,8 +83,9 @@ async def chat_openai(request: ChatRequest):
         session_id = request.session_id or generate_session_id()
 
         # 转换当前消息格式
-        current_messages = [{"role": msg.role, "content": msg.content}
-                            for msg in request.messages]
+        current_messages = [
+            {"role": msg.role, "content": msg.content} for msg in request.messages
+        ]
 
         # 合并历史消息和当前消息
         all_messages = merge_history_and_messages(session_id, current_messages)
@@ -89,7 +100,7 @@ async def chat_openai(request: ChatRequest):
                 temperature=request.temperature,
                 max_tokens=request.max_tokens,
                 max_completion_tokens=request.max_completion_tokens,
-                reasoning_effort=request.reasoning_effort
+                reasoning_effort=request.reasoning_effort,
             ):
                 content += chunk
         else:
@@ -99,7 +110,7 @@ async def chat_openai(request: ChatRequest):
                 max_tokens=request.max_tokens,
                 max_completion_tokens=request.max_completion_tokens,
                 reasoning_effort=request.reasoning_effort,
-                stream=False
+                stream=False,
             )
 
         # 保存对话历史
@@ -112,20 +123,18 @@ async def chat_openai(request: ChatRequest):
         add_message(session_id, "assistant", content)
 
         return ChatResponse(
-            content=content,
-            model=client.model_name,
-            session_id=session_id
+            content=content, model=client.model_name, session_id=session_id
         )
 
     except Exception as e:
         import traceback
+
         error_detail = str(e) if str(e) else repr(e)
         # 在开发环境中，可以打印完整的错误堆栈
         print(f"Error in chat_openai: {error_detail}")
         print(traceback.format_exc())
         raise HTTPException(
-            status_code=500,
-            detail=f"Error generating response: {error_detail}"
+            status_code=500, detail=f"Error generating response: {error_detail}"
         )
 
 
@@ -133,7 +142,8 @@ async def chat_openai(request: ChatRequest):
 async def chat_openai_simple(
     message: str = Query(..., description="用户消息"),
     session_id: Optional[str] = Query(
-        None, description="会话 ID，用于维护对话上下文。首次请求可不提供，将自动创建")
+        None, description="会话 ID，用于维护对话上下文。首次请求可不提供，将自动创建"
+    ),
 ):
     """
     使用 OpenAI SDK 的简化版对话接口（支持上下文）
@@ -161,16 +171,16 @@ async def chat_openai_simple(
         return {
             "message": content,
             "model": client.model_name,
-            "session_id": session_id
+            "session_id": session_id,
         }
 
     except Exception as e:
         import traceback
+
         error_detail = str(e) if str(e) else repr(e)
         # 在开发环境中，可以打印完整的错误堆栈
         print(f"Error in chat_openai_simple: {error_detail}")
         print(traceback.format_exc())
         raise HTTPException(
-            status_code=500,
-            detail=f"Error generating response: {error_detail}"
+            status_code=500, detail=f"Error generating response: {error_detail}"
         )

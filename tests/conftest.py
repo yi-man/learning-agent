@@ -1,4 +1,5 @@
 """pytest 配置和共享 fixtures"""
+
 import pytest
 from unittest.mock import AsyncMock, MagicMock
 from app.config import Settings
@@ -13,7 +14,7 @@ def mock_settings(monkeypatch):
         llm_model_id="test-model",
         llm_timeout=30,
         api_host="127.0.0.1",
-        api_port=8000
+        api_port=8000,
     )
     return settings
 

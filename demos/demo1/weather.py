@@ -17,9 +17,9 @@ def get_weather(city: str) -> str:
         data = response.json()
 
         # 提取当前天气状况
-        current_condition = data['current_condition'][0]
-        weather_desc = current_condition['weatherDesc'][0]['value']
-        temp_c = current_condition['temp_C']
+        current_condition = data["current_condition"][0]
+        weather_desc = current_condition["weatherDesc"][0]["value"]
+        temp_c = current_condition["temp_C"]
 
         # 格式化成自然语言返回
         return f"{city}当前天气:{weather_desc}，气温{temp_c}摄氏度"

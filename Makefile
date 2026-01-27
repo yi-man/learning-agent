@@ -154,7 +154,7 @@ format: check-venv ## 格式化代码（使用 black，如果已安装）
 
 lint: check-venv ## 代码检查（使用 ruff，如果已安装）
 	@echo "🔍 代码检查..."
-	@if $(VENV_BIN)/python -c "import ruff" 2>/dev/null; then \
+	@if command -v $(VENV_BIN)/ruff >/dev/null 2>&1; then \
 		$(VENV_BIN)/ruff check . --exclude=venv; \
 		echo "✅ 代码检查完成"; \
 	else \

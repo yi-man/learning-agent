@@ -1,4 +1,5 @@
 """对话历史管理模块"""
+
 import uuid
 from collections import defaultdict
 from typing import Any, Dict, List, Optional
@@ -26,10 +27,7 @@ def add_message(session_id: str, role: str, content: Any):
     if session_id not in chat_histories:
         chat_histories[session_id] = []
 
-    chat_histories[session_id].append({
-        "role": role,
-        "content": content
-    })
+    chat_histories[session_id].append({"role": role, "content": content})
 
     # 限制历史长度，只保留最近的 N 条消息
     if len(chat_histories[session_id]) > MAX_HISTORY_MESSAGES:
@@ -44,8 +42,7 @@ def clear_history(session_id: str):
 
 
 def merge_history_and_messages(
-    session_id: Optional[str],
-    current_messages: List[Dict[str, Any]]
+    session_id: Optional[str], current_messages: List[Dict[str, Any]]
 ) -> List[Dict[str, Any]]:
     """
     合并历史消息和当前消息

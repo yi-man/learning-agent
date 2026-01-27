@@ -41,19 +41,15 @@ BASE_URL = os.getenv("LLM_BASE_URL")
 MODEL_ID = os.getenv("LLM_MODEL_ID")
 TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
 if TAVILY_API_KEY:
-    os.environ['TAVILY_API_KEY'] = TAVILY_API_KEY
+    os.environ["TAVILY_API_KEY"] = TAVILY_API_KEY
 
-llm = OpenAICompatibleClient(
-    model=MODEL_ID,
-    api_key=API_KEY,
-    base_url=BASE_URL
-)
+llm = OpenAICompatibleClient(model=MODEL_ID, api_key=API_KEY, base_url=BASE_URL)
 
 # --- 2. 初始化 ---
 user_prompt = "你好，请帮我查询一下今天北京的天气，然后根据天气推荐一个合适的旅游景点。"
 prompt_history = [f"用户请求: {user_prompt}"]
 
-print(f"用户输入: {user_prompt}\n" + "="*40)
+print(f"用户输入: {user_prompt}\n" + "=" * 40)
 
 # --- 3. 运行主循环 ---
 for i in range(5):  # 设置最大循环次数
@@ -66,7 +62,10 @@ for i in range(5):  # 设置最大循环次数
     llm_output = llm.generate(full_prompt, system_prompt=AGENT_SYSTEM_PROMPT)
     # 模型可能会输出多余的Thought-Action，需要截断
     match = re.search(
-        r'(Thought:.*?Action:.*?)(?=\n\s*(?:Thought:|Action:|Observation:)|\Z)', llm_output, re.DOTALL)
+        r"(Thought:.*?Action:.*?)(?=\n\s*(?:Thought:|Action:|Observation:)|\Z)",
+        llm_output,
+        re.DOTALL,
+    )
     if match:
         truncated = match.group(1).strip()
         if truncated != llm_output.strip():
@@ -80,7 +79,7 @@ for i in range(5):  # 设置最大循环次数
     if not action_match:
         observation = "错误: 未能解析到 Action 字段。请确保你的回复严格遵循 'Thought: ... Action: ...' 的格式。"
         observation_str = f"Observation: {observation}"
-        print(f"{observation_str}\n" + "="*40)
+        print(f"{observation_str}\n" + "=" * 40)
         prompt_history.append(observation_str)
         continue
     action_str = action_match.group(1).strip()
@@ -101,5 +100,5 @@ for i in range(5):  # 设置最大循环次数
 
     # 3.4. 记录观察结果
     observation_str = f"Observation: {observation}"
-    print(f"{observation_str}\n" + "="*40)
+    print(f"{observation_str}\n" + "=" * 40)
     prompt_history.append(observation_str)

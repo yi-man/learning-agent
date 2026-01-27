@@ -15,13 +15,11 @@ class OpenAICompatibleClient:
         print("正在调用大语言模型...")
         try:
             messages = [
-                {'role': 'system', 'content': system_prompt},
-                {'role': 'user', 'content': prompt}
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": prompt},
             ]
             response = self.client.chat.completions.create(
-                model=self.model,
-                messages=messages,
-                stream=False
+                model=self.model, messages=messages, stream=False
             )
             answer = response.choices[0].message.content
             print("大语言模型响应成功。")

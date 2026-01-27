@@ -1,4 +1,5 @@
 """OpenAI SDK 客户端"""
+
 from typing import Any, AsyncIterator, Dict, List, Optional
 
 from openai import AsyncOpenAI
@@ -15,7 +16,7 @@ class OpenAIClient(BaseLLMClient):
         api_key: Optional[str] = None,
         base_url: Optional[str] = None,
         model_name: Optional[str] = None,
-        timeout: Optional[int] = None
+        timeout: Optional[int] = None,
     ):
         """
         初始化 OpenAI 客户端
@@ -48,13 +49,19 @@ class OpenAIClient(BaseLLMClient):
         max_tokens: Optional[int] = None,
         max_completion_tokens: Optional[int] = None,
         reasoning_effort: Optional[str] = None,
-        stream: bool = False
+        stream: bool = False,
     ) -> str:
         """发送聊天请求（非流式）"""
         if stream:
             # 如果要求流式，但调用的是非流式方法，则收集流式结果
             full_response = ""
-            async for chunk in self.chat_stream(messages, temperature, max_tokens, max_completion_tokens, reasoning_effort):
+            async for chunk in self.chat_stream(
+                messages,
+                temperature,
+                max_tokens,
+                max_completion_tokens,
+                reasoning_effort,
+            ):
                 full_response += chunk
             return full_response
 
@@ -94,7 +101,7 @@ class OpenAIClient(BaseLLMClient):
         temperature: float = 0.7,
         max_tokens: Optional[int] = None,
         max_completion_tokens: Optional[int] = None,
-        reasoning_effort: Optional[str] = None
+        reasoning_effort: Optional[str] = None,
     ) -> AsyncIterator[str]:
         """流式发送聊天请求"""
         # 构建请求参数

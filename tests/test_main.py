@@ -1,4 +1,5 @@
 """FastAPI 主应用测试"""
+
 import pytest
 from fastapi.testclient import TestClient
 from app.main import app
@@ -34,8 +35,8 @@ def test_cors_headers(client):
         "/",
         headers={
             "Origin": "http://localhost:3000",
-            "Access-Control-Request-Method": "POST"
-        }
+            "Access-Control-Request-Method": "POST",
+        },
     )
     # CORS 中间件应该允许所有来源
     assert response.status_code in [200, 405]  # OPTIONS 可能返回 405

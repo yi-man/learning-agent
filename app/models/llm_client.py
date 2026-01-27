@@ -1,4 +1,5 @@
 """LLM 客户端抽象层"""
+
 from abc import ABC, abstractmethod
 from typing import Any, AsyncIterator, Dict, List, Optional, Union
 
@@ -18,7 +19,7 @@ class BaseLLMClient(ABC):
         max_tokens: Optional[int] = None,
         max_completion_tokens: Optional[int] = None,
         reasoning_effort: Optional[str] = None,
-        stream: bool = False
+        stream: bool = False,
     ) -> str:
         """
         发送聊天请求
@@ -41,7 +42,7 @@ class BaseLLMClient(ABC):
         temperature: float = 0.7,
         max_tokens: Optional[int] = None,
         max_completion_tokens: Optional[int] = None,
-        reasoning_effort: Optional[str] = None
+        reasoning_effort: Optional[str] = None,
     ) -> AsyncIterator[str]:
         """
         流式发送聊天请求
@@ -64,7 +65,7 @@ class DoubaoClient(BaseLLMClient):
         self,
         api_key: Optional[str] = None,
         api_endpoint: Optional[str] = None,
-        model_name: Optional[str] = None
+        model_name: Optional[str] = None,
     ):
         """
         初始化豆包客户端
@@ -86,13 +87,19 @@ class DoubaoClient(BaseLLMClient):
         max_tokens: Optional[int] = None,
         max_completion_tokens: Optional[int] = None,
         reasoning_effort: Optional[str] = None,
-        stream: bool = False
+        stream: bool = False,
     ) -> str:
         """发送聊天请求（非流式）"""
         if stream:
             # 如果要求流式，但调用的是非流式方法，则收集流式结果
             full_response = ""
-            async for chunk in self.chat_stream(messages, temperature, max_tokens, max_completion_tokens, reasoning_effort):
+            async for chunk in self.chat_stream(
+                messages,
+                temperature,
+                max_tokens,
+                max_completion_tokens,
+                reasoning_effort,
+            ):
                 full_response += chunk
             return full_response
 
@@ -113,14 +120,12 @@ class DoubaoClient(BaseLLMClient):
 
         headers = {
             "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
         try:
             response = await self.client.post(
-                self.api_endpoint,
-                json=payload,
-                headers=headers
+                self.api_endpoint, json=payload, headers=headers
             )
             response.raise_for_status()
             result = response.json()
@@ -133,7 +138,8 @@ class DoubaoClient(BaseLLMClient):
 
         except httpx.HTTPStatusError as e:
             raise Exception(
-                f"API request failed with status {e.response.status_code}: {e.response.text}")
+                f"API request failed with status {e.response.status_code}: {e.response.text}"
+            )
         except Exception as e:
             raise Exception(f"Error calling Doubao API: {str(e)}")
 
@@ -143,14 +149,14 @@ class DoubaoClient(BaseLLMClient):
         temperature: float = 0.7,
         max_tokens: Optional[int] = None,
         max_completion_tokens: Optional[int] = None,
-        reasoning_effort: Optional[str] = None
+        reasoning_effort: Optional[str] = None,
     ) -> AsyncIterator[str]:
         """流式发送聊天请求"""
         payload = {
             "model": self.model_name,
             "messages": messages,
             "temperature": temperature,
-            "stream": True
+            "stream": True,
         }
 
         # 火山引擎 API 使用 max_completion_tokens 而不是 max_tokens
@@ -164,15 +170,12 @@ class DoubaoClient(BaseLLMClient):
 
         headers = {
             "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
         try:
             async with self.client.stream(
-                "POST",
-                self.api_endpoint,
-                json=payload,
-                headers=headers
+                "POST", self.api_endpoint, json=payload, headers=headers
             ) as response:
                 response.raise_for_status()
 
@@ -188,6 +191,7 @@ class DoubaoClient(BaseLLMClient):
 
                         try:
                             import json
+
                             data = json.loads(data_str)
                             if "choices" in data and len(data["choices"]) > 0:
                                 delta = data["choices"][0].get("delta", {})
@@ -206,7 +210,8 @@ class DoubaoClient(BaseLLMClient):
             except:
                 error_detail = f" - {e.response.text[:200]}"
             raise Exception(
-                f"API request failed with status {e.response.status_code}{error_detail}")
+                f"API request failed with status {e.response.status_code}{error_detail}"
+            )
         except Exception as e:
             error_msg = str(e) if str(e) else repr(e)
             raise Exception(f"Error calling Doubao API (stream): {error_msg}")

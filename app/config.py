@@ -1,4 +1,5 @@
 """配置管理模块"""
+
 from typing import Optional
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -15,7 +16,7 @@ class Settings(BaseSettings):
     # OpenAI SDK 配置（可选，用于兼容 OpenAI API 格式的模型）
     # 如果配置，OpenAI SDK 将使用此 base_url；否则使用默认 OpenAI API
     llm_base_url: Optional[str] = None
-    
+
     # LLM 请求超时配置
     llm_timeout: int = 60
 
@@ -24,10 +25,7 @@ class Settings(BaseSettings):
     api_port: int = 8000
 
     model_config = SettingsConfigDict(
-        env_file=".env",
-        env_file_encoding="utf-8",
-        case_sensitive=False,
-        extra="ignore"
+        env_file=".env", env_file_encoding="utf-8", case_sensitive=False, extra="ignore"
     )
 
 
