@@ -16,6 +16,12 @@ learning-agent/
 │   └── api/
 │       ├── __init__.py
 │       └── chat.py          # 对话 API 端点
+├── .cursor/
+│   ├── rules/               # Cursor 规则文件
+│   │   └── superpowers-workflow.mdc  # Superpowers 工作流激活规则
+│   └── skills/              # Superpowers skills（标准化开发流程）
+├── scripts/
+│   └── install-superpowers.sh  # Superpowers skills 安装脚本
 ├── venv/                    # Python 虚拟环境（运行 setup.sh 后生成）
 ├── requirements.txt         # Python 依赖
 ├── env.example              # 环境变量示例
@@ -245,6 +251,43 @@ uvicorn app.main:app --reload
 
 如果没有看到 `(venv)`，说明虚拟环境未激活。
 
+## Superpowers 开发工作流
+
+本项目集成了 [Superpowers](https://github.com/obra/superpowers) 开发工作流系统，提供标准化的软件开发流程。
+
+### 什么是 Superpowers？
+
+Superpowers 是一套完整的软件开发工作流，基于可组合的 "skills" 系统，确保 AI 代理遵循最佳实践：
+- **Test-Driven Development (TDD)** - 测试驱动开发
+- **Brainstorming** - 设计阶段的需求探索
+- **Writing Plans** - 详细的实施计划
+- **Systematic Debugging** - 系统化调试流程
+
+### 安装 Superpowers Skills
+
+Skills 已预装在项目中，位于 `.cursor/skills/` 目录。如果需要更新或重新安装：
+
+```bash
+./scripts/install-superpowers.sh
+```
+
+### 核心工作流
+
+1. **Brainstorming（设计）** - 在编码前探索需求、设计方案
+2. **Writing Plans（计划）** - 创建详细的实施计划，分解为小任务
+3. **Test-Driven Development（实施）** - 先写测试，再写代码
+4. **Systematic Debugging（调试）** - 系统化的调试流程
+
+### 如何使用
+
+在 Cursor 中与 AI 对话时，Superpowers skills 会自动激活。例如：
+
+- 说 "我想添加一个新功能" → 自动触发 `brainstorming` skill
+- 说 "帮我修复这个 bug" → 自动触发 `systematic-debugging` skill
+- 开始编码时 → 自动遵循 `test-driven-development` 流程
+
+更多信息请查看 `.cursor/rules/superpowers-workflow.mdc` 和 `.cursor/skills/` 目录。
+
 ## 学习资源
 
 这是一个学习 AI Agent 开发的基础框架，你可以在此基础上：
@@ -253,6 +296,7 @@ uvicorn app.main:app --reload
 2. 理解 LLM API 的调用方式
 3. 学习抽象层设计模式
 4. 逐步添加 Agent 功能（记忆、工具调用、规划等）
+5. 使用 Superpowers 工作流标准化开发流程
 
 ## 许可证
 

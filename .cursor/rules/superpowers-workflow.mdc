@@ -1,0 +1,67 @@
+---
+description: Superpowers 开发工作流激活规则 - 标准化开发流程
+alwaysApply: true
+---
+
+# Superpowers 开发工作流
+
+本项目集成了 [Superpowers](https://github.com/obra/superpowers) 开发工作流系统，提供标准化的软件开发流程。
+
+## 核心工作流
+
+### 1. Brainstorming（设计阶段）
+
+在编写代码之前，使用 `brainstorming` skill 来：
+
+- 理解用户真实意图
+- 探索不同的设计方案
+- 逐步验证设计
+
+### 2. Writing Plans（计划阶段）
+
+设计确认后，使用 `writing-plans` skill 创建详细的实施计划：
+
+- 将工作分解为小任务（2-5分钟每个）
+- 明确文件路径、代码、测试步骤
+- 遵循 TDD、YAGNI、DRY 原则
+
+### 3. Test-Driven Development（实施阶段）
+
+实施时，使用 `test-driven-development` skill：
+
+- 先写失败的测试
+- 写最小代码让测试通过
+- 重构保持测试通过
+
+### 4. Systematic Debugging（调试阶段）
+
+遇到问题时，使用 `systematic-debugging` skill：
+
+- 4阶段根因分析流程
+- 防御性深度检查
+- 条件等待技术
+
+## 技能使用规范
+
+- **必须使用相关技能**：如果任务可能涉及某个 skill，必须使用它
+- **技能优先级**：流程技能（brainstorming, debugging）优先于实施技能
+- **严格遵循**：TDD、调试等严格流程必须完全遵循，不能跳过
+
+## 项目特定说明
+
+- 本项目使用 Python/FastAPI
+- 测试框架：pytest（如果使用）
+- 代码风格：遵循 Python PEP 8
+
+## 可用 Skills
+
+所有 Superpowers skills 已安装在 `.cursor/skills/` 目录中，包括：
+
+- brainstorming
+- writing-plans
+- test-driven-development
+- executing-plans
+- systematic-debugging
+- 以及其他协作和调试技能
+
+查看 `.cursor/skills/` 目录了解完整的技能列表。
