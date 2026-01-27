@@ -33,7 +33,39 @@ learning-agent/
 
 ## 快速开始
 
-### 方式一：使用自动化脚本（推荐）
+### 方式一：使用 Makefile（推荐）
+
+**macOS/Linux:**
+
+```bash
+# 1. 查看所有可用命令
+make help
+
+# 2. 初始化项目（创建虚拟环境并安装依赖）
+make setup
+
+# 3. 配置环境变量（编辑 .env 文件，填入 API Key）
+# 编辑 .env 文件
+
+# 4. 启动应用
+make dev
+```
+
+**常用 Makefile 命令：**
+
+```bash
+make help              # 显示所有可用任务和说明
+make setup             # 初始化项目
+make install           # 安装依赖
+make dev               # 启动应用（开发模式）
+make test              # 运行所有测试
+make test-cov          # 运行测试并生成覆盖率报告
+make clean             # 清理所有缓存文件
+make install-superpowers  # 安装/更新 Superpowers skills
+make check-env         # 检查环境配置
+```
+
+### 方式二：使用自动化脚本
 
 **macOS/Linux:**
 
@@ -48,7 +80,9 @@ learning-agent/
 ./run.sh
 ```
 
-### 方式二：手动设置
+**注意：** 推荐使用 Makefile 方式，shell 脚本保留作为备选。
+
+### 方式三：手动设置
 
 #### 1. 创建虚拟环境
 
@@ -116,6 +150,44 @@ python -m app.main
 
 - Swagger UI: http://localhost:8000/docs
 - ReDoc: http://localhost:8000/redoc
+
+## Makefile 命令说明
+
+项目使用 Makefile 统一管理所有常用任务。运行 `make help` 查看所有可用命令。
+
+### 基础任务
+
+- `make setup` - 初始化项目（创建虚拟环境、安装依赖、创建 .env）
+- `make dev` - 启动应用（开发模式）
+- `make install` - 安装依赖（从 requirements.txt）
+- `make check-env` - 检查环境配置（Python 版本、虚拟环境、.env 文件）
+
+### 测试任务
+
+- `make test` - 运行所有测试
+- `make test-cov` - 运行测试并生成覆盖率报告（生成 `htmlcov/index.html`）
+- `make test-watch` - 监控文件变化并自动运行测试
+- `make test-file FILE=tests/test_main.py` - 运行指定测试文件
+
+### 清理任务
+
+- `make clean` - 清理所有缓存文件（Python 缓存、pytest 缓存、覆盖率报告等）
+
+### 代码质量任务
+
+- `make format` - 格式化代码（需要安装 black）
+- `make lint` - 代码检查（需要安装 ruff）
+- `make type-check` - 类型检查（需要安装 mypy）
+
+### Superpowers 管理
+
+- `make install-superpowers` - 安装/更新 Superpowers skills
+- `make update-superpowers` - 更新 Superpowers skills（快捷方式）
+
+### 文档任务
+
+- `make docs` - 生成 API 文档（FastAPI 自动生成，访问 http://localhost:8000/docs）
+- `make serve-docs` - 本地启动文档服务器
 
 ## API 使用示例
 
