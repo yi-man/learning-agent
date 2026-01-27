@@ -39,7 +39,7 @@ available_tools = {
 API_KEY = os.getenv("LLM_API_KEY")
 BASE_URL = os.getenv("LLM_BASE_URL")
 MODEL_ID = os.getenv("LLM_MODEL_ID")
-TAVILY_API_KEY = "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"
+TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
 if TAVILY_API_KEY:
     os.environ['TAVILY_API_KEY'] = TAVILY_API_KEY
 
