@@ -1,4 +1,4 @@
-.PHONY: help setup dev install test test-cov test-watch test-file clean format lint type-check install-superpowers update-superpowers docs serve-docs check-env
+.PHONY: help setup dev install test test-cov test-watch test-file clean format lint lint-fix type-check install-hooks install-superpowers update-superpowers docs serve-docs check-env
 
 # 变量定义
 PYTHON := python3
@@ -32,6 +32,7 @@ help: ## 显示所有可用任务和说明
 	@echo "代码质量任务:"
 	@echo "  make format            格式化代码（使用 black，如果已安装）"
 	@echo "  make lint              代码检查（使用 ruff，如果已安装）"
+	@echo "  make lint-fix          代码检查并自动修复（使用 ruff --fix，如果已安装）"
 	@echo "  make type-check        类型检查（使用 mypy，如果已安装）"
 	@echo ""
 	@echo "Superpowers 管理:"
@@ -43,6 +44,7 @@ help: ## 显示所有可用任务和说明
 	@echo "  make serve-docs        本地启动文档服务器"
 	@echo ""
 	@echo "辅助任务:"
+	@echo "  make install-hooks     安装 Git hooks（pre-commit 等）"
 	@echo "  make check-env         检查环境配置（Python 版本、虚拟环境、.env 文件）"
 	@echo "  make help              显示此帮助信息"
 	@echo ""
@@ -88,6 +90,8 @@ setup: ## 初始化项目（创建虚拟环境、安装依赖、创建 .env）
 	else \
 		echo "✅ .env 文件已存在"; \
 	fi
+	@echo "🔗 安装 Git hooks..."
+	@$(MAKE) install-hooks
 	@echo ""
 	@echo "✨ 项目初始化完成！"
 	@echo ""
@@ -155,8 +159,22 @@ format: check-venv ## 格式化代码（使用 black，如果已安装）
 lint: check-venv ## 代码检查（使用 ruff，如果已安装）
 	@echo "🔍 代码检查..."
 	@if command -v $(VENV_BIN)/ruff >/dev/null 2>&1; then \
-		$(VENV_BIN)/ruff check . --exclude=venv; \
-		echo "✅ 代码检查完成"; \
+		if $(VENV_BIN)/ruff check . --exclude=venv; then \
+			echo "✅ 代码检查完成"; \
+		else \
+			echo "❌ 代码检查失败"; \
+			exit 1; \
+		fi \
+	else \
+		echo "⚠️  ruff 未安装，跳过代码检查"; \
+		echo "提示: 如需使用代码检查功能，请在 requirements.txt 中添加 ruff"; \
+	fi
+
+lint-fix: check-venv ## 代码检查并自动修复（使用 ruff --fix，如果已安装）
+	@echo "🔍 代码检查并自动修复..."
+	@if command -v $(VENV_BIN)/ruff >/dev/null 2>&1; then \
+		$(VENV_BIN)/ruff check --fix . --exclude=venv || true; \
+		echo "✅ 代码检查并修复完成"; \
 	else \
 		echo "⚠️  ruff 未安装，跳过代码检查"; \
 		echo "提示: 如需使用代码检查功能，请在 requirements.txt 中添加 ruff"; \
@@ -165,12 +183,32 @@ lint: check-venv ## 代码检查（使用 ruff，如果已安装）
 type-check: check-venv ## 类型检查（使用 mypy，如果已安装）
 	@echo "🔎 类型检查..."
 	@if $(VENV_BIN)/python -c "import mypy" 2>/dev/null; then \
-		$(VENV_BIN)/mypy app --ignore-missing-imports; \
-		echo "✅ 类型检查完成"; \
+		if $(VENV_BIN)/mypy app --ignore-missing-imports; then \
+			echo "✅ 类型检查完成"; \
+		else \
+			echo "❌ 类型检查失败"; \
+			exit 1; \
+		fi \
 	else \
 		echo "⚠️  mypy 未安装，跳过类型检查"; \
 		echo "提示: 如需使用类型检查功能，请在 requirements.txt 中添加 mypy"; \
 	fi
+
+install-hooks: ## 安装 Git hooks（pre-commit 等）
+	@echo "🔗 安装 Git hooks..."
+	@if [ ! -d ".git" ]; then \
+		echo "❌ 错误: 当前目录不是 Git 仓库"; \
+		exit 1; \
+	fi
+	@if [ ! -f "scripts/pre-commit" ]; then \
+		echo "❌ 错误: 未找到 scripts/pre-commit 文件"; \
+		exit 1; \
+	fi
+	@mkdir -p .git/hooks
+	@cp scripts/pre-commit .git/hooks/pre-commit
+	@chmod +x .git/hooks/pre-commit
+	@echo "✅ Git hooks 安装完成"
+	@echo "   pre-commit hook 已安装，将在提交前自动运行 format、lint、type-check"
 
 install-superpowers: ## 安装/更新 Superpowers skills
 	@echo "📦 安装/更新 Superpowers skills..."

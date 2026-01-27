@@ -1,7 +1,5 @@
 """配置模块测试"""
 
-import pytest
-from pydantic import ValidationError
 from app.config import Settings
 
 
@@ -34,7 +32,6 @@ def test_settings_requires_api_key(monkeypatch):
     """测试 API key 为必填项 - 验证字段定义"""
     # 由于 .env 文件存在，Settings() 会成功创建
     # 我们通过直接传递空值来测试验证逻辑
-    from pydantic import ValidationError
 
     # 测试：如果显式传递空字符串，应该失败
     # 注意：由于 .env 文件存在，我们需要 mock 环境变量为空

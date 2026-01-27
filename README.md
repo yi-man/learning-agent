@@ -55,11 +55,16 @@ make dev
 
 ```bash
 make help              # 显示所有可用任务和说明
-make setup             # 初始化项目
+make setup             # 初始化项目（会自动安装 Git hooks）
 make install           # 安装依赖
+make install-hooks     # 安装 Git hooks（pre-commit）
 make dev               # 启动应用（开发模式）
 make test              # 运行所有测试
 make test-cov          # 运行测试并生成覆盖率报告
+make format            # 格式化代码（black）
+make lint              # 代码检查（ruff）
+make lint-fix          # 代码检查并自动修复（ruff --fix）
+make type-check        # 类型检查（mypy）
 make clean             # 清理所有缓存文件
 make install-superpowers  # 安装/更新 Superpowers skills
 make check-env         # 检查环境配置
@@ -175,9 +180,42 @@ python -m app.main
 
 ### 代码质量任务
 
-- `make format` - 格式化代码（需要安装 black）
-- `make lint` - 代码检查（需要安装 ruff）
-- `make type-check` - 类型检查（需要安装 mypy）
+- `make format` - 格式化代码（使用 black）
+- `make lint` - 代码检查（使用 ruff）
+- `make lint-fix` - 代码检查并自动修复（使用 ruff --fix）
+- `make type-check` - 类型检查（使用 mypy）
+
+### Git Hooks（自动代码检查）
+
+项目配置了 Git pre-commit hook，在每次 `git commit` 前自动运行代码质量检查：
+
+1. **自动格式化**：使用 `black` 格式化代码
+2. **自动修复**：使用 `ruff --fix` 自动修复可修复的问题
+3. **代码检查**：验证没有剩余的问题
+4. **类型检查**：使用 `mypy` 进行类型检查
+
+**安装方式：**
+
+- **自动安装**：运行 `make setup` 时会自动安装 Git hooks
+- **手动安装**：运行 `make install-hooks` 单独安装
+
+**工作原理：**
+
+- Hook 脚本位于 `scripts/pre-commit`，会被提交到仓库
+- 运行 `make setup` 或 `make install-hooks` 时，会将脚本复制到 `.git/hooks/pre-commit`
+- 每次提交前，hook 会自动运行检查
+- 如果检查失败，提交会被阻止，并提示运行相应的命令查看详细错误
+- 格式化修复的文件会自动添加到暂存区
+
+**跳过检查（不推荐）：**
+
+如果确实需要跳过检查（例如紧急修复），可以使用：
+
+```bash
+git commit --no-verify -m "紧急修复"
+```
+
+**注意：** 跳过检查可能导致代码质量问题，请谨慎使用。
 
 ### Superpowers 管理
 

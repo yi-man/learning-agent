@@ -1,6 +1,5 @@
 """对话历史管理模块测试"""
 
-import pytest
 from app.api.chat_history import (
     generate_session_id,
     get_history,

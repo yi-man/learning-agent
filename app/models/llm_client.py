@@ -1,7 +1,7 @@
 """LLM 客户端抽象层"""
 
 from abc import ABC, abstractmethod
-from typing import Any, AsyncIterator, Dict, List, Optional, Union
+from typing import Any, AsyncIterator, Dict, List, Optional
 
 import httpx
 
@@ -207,7 +207,7 @@ class DoubaoClient(BaseLLMClient):
                 error_json = e.response.json()
                 if "error" in error_json:
                     error_detail = f" - {error_json['error']}"
-            except:
+            except (json.JSONDecodeError, ValueError, TypeError):
                 error_detail = f" - {e.response.text[:200]}"
             raise Exception(
                 f"API request failed with status {e.response.status_code}{error_detail}"

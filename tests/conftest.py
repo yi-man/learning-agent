@@ -1,7 +1,7 @@
 """pytest 配置和共享 fixtures"""
 
 import pytest
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock
 from app.config import Settings
 
 
