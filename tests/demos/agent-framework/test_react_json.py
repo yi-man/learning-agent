@@ -21,3 +21,13 @@ def test_parse_json_output():
     assert action["type"] == "tool_call"
     assert action["tool_name"] == "Search"
     assert action["input"] == "华为手机"
+
+
+def test_prompt_contains_json_format():
+    """测试 prompt 包含 JSON 格式要求"""
+    agent = ReActJSONAgent(llm_client=None, tool_executor=None)
+    prompt = agent._build_prompt("测试问题", "工具描述", "")
+
+    assert "JSON" in prompt or "json" in prompt
+    assert "thought" in prompt.lower()
+    assert "action" in prompt.lower()
