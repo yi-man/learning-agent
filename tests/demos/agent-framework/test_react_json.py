@@ -98,3 +98,38 @@ def test_run_with_tool_call():
     assert result == "答案"
     assert mock_tool.called
     assert len(mock_llm.think.call_args_list) == 2
+
+
+def test_parse_output_with_code_block():
+    """测试解析代码块中的 JSON"""
+    agent = ReActJSONAgent(llm_client=None, tool_executor=None)
+
+    json_text = """一些前置文本
+```json
+{"thought": "思考", "action": {"type": "finish", "input": "答案"}}
+```
+一些后置文本"""
+
+    thought, action = agent._parse_output(json_text)
+    assert thought == "思考"
+    assert action["type"] == "finish"
+
+
+def test_parse_output_invalid_json():
+    """测试无效 JSON 的处理"""
+    agent = ReActJSONAgent(llm_client=None, tool_executor=None)
+
+    invalid_text = "这不是 JSON 格式"
+    thought, action = agent._parse_output(invalid_text)
+    assert thought is None
+    assert action is None
+
+
+def test_parse_output_missing_fields():
+    """测试缺少字段的 JSON"""
+    agent = ReActJSONAgent(llm_client=None, tool_executor=None)
+
+    json_text = '{"thought": "只有思考"}'
+    thought, action = agent._parse_output(json_text)
+    assert thought == "只有思考"
+    assert action is None
