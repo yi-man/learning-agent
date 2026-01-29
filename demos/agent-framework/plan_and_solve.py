@@ -53,6 +53,68 @@ class Planner:
             return []
 
 
+# --- 2.5 重规划器 (Replanner) 定义 ---
+REPLANNER_PROMPT_TEMPLATE = """
+你是一个顶级的AI规划专家。原计划在执行某一步时失败或需要调整，请基于当前状态给出从当前起的新计划。
+输入：原问题、原计划、已完成步骤与结果、失败的步骤及原因。
+请输出从当前起的新步骤列表（可省略已完成部分）。若认为任务无法继续，可输出空列表 []。
+
+# 原问题:
+{question}
+
+# 原计划:
+{plan}
+
+# 已完成步骤与结果:
+{completed}
+
+# 失败的步骤:
+{failed_step}
+
+# 失败原因:
+{failure_reason}
+
+请严格按照以下格式输出新计划，```python与```作为前后缀是必要的:
+```python
+["步骤A", "步骤B", ...]
+```
+或
+```python
+[]
+```
+"""
+
+
+class Replanner:
+    def __init__(self, llm_client: HelloAgentsLLM):
+        self.llm_client = llm_client
+
+    def replan(
+        self,
+        question: str,
+        plan: list[str],
+        completed: list[tuple[str, str]],
+        failed_step: str,
+        failure_reason: str,
+    ) -> list[str]:
+        completed_str = "\n".join(f"步骤: {s}\n结果: {r}" for s, r in completed) or "无"
+        prompt = REPLANNER_PROMPT_TEMPLATE.format(
+            question=question,
+            plan=plan,
+            completed=completed_str,
+            failed_step=failed_step,
+            failure_reason=failure_reason,
+        )
+        messages = [{"role": "user", "content": prompt}]
+        response_text = self.llm_client.think(messages=messages) or ""
+        try:
+            plan_str = response_text.split("```python")[1].split("```")[0].strip()
+            new_plan = ast.literal_eval(plan_str)
+            return new_plan if isinstance(new_plan, list) else []
+        except (ValueError, SyntaxError, IndexError, TypeError):
+            return []
+
+
 # --- 3. 执行器 (Executor) 定义 ---
 EXECUTOR_PROMPT_TEMPLATE = """
 你是一位顶级的AI执行专家。你的任务是严格按照给定的计划，一步步地解决问题。
