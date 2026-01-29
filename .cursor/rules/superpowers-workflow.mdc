@@ -84,11 +84,10 @@ alwaysApply: true
 
 ### 6. Code Review（代码审查阶段）
 
-**必须进行代码审查的时机：**
-- Subagent-Driven Development：每个任务完成后
-- Executing Plans：每批（3个任务）完成后
-- 完成主要功能后
-- 合并到 main 之前
+**本项目默认节奏：**
+- **Executing Plans：** 执行过程中不要求人工 review；在**整份计划执行完成**后，由 Agent 提醒用户做一次整体 review，用户确认后 Agent 执行选项 1（本地合并）。
+- **Subagent-Driven Development：** 若用户选择「执行完再 review」，则在当次会话中完成所有任务后再提醒用户做一次整体 review，确认后由 Agent 执行选项 1。
+- 合并到 main 之前必须有一次审查；上述「一次审查」在全部执行完成后进行即可。
 
 **使用 `requesting-code-review` skill 请求审查：**
 - 派遣 code-reviewer 子代理进行审查

@@ -35,6 +35,8 @@ digraph when_to_use {
 - Two-stage review after each task: spec compliance first, then code quality
 - Faster iteration (no human-in-loop between tasks)
 
+**Optional: single human review at end.** When the user prefers "execute all tasks, then one review, then merge" (same as executing-plans): run all tasks in order with subagent spec/code review as usual, but do not require human feedback between tasks. After all tasks are complete, remind the user once: "All tasks complete. Please review all changes locally. When you're done, reply and I'll execute option 1 (merge)." When the user confirms, use superpowers:finishing-a-development-branch and execute option 1. This aligns with the single-review-after-completion flow in executing-plans.
+
 ## The Process
 
 ```dot
@@ -237,4 +239,4 @@ Done!
 - **superpowers:test-driven-development** - Subagents follow TDD for each task
 
 **Alternative workflow:**
-- **superpowers:executing-plans** - Use for parallel session instead of same-session execution
+- **superpowers:executing-plans** - Use for parallel session instead of same-session execution; uses single-review-after-completion (run all tasks, then one human review reminder, then option 1 merge)
