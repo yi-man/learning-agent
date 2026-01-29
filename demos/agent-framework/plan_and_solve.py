@@ -137,30 +137,86 @@ EXECUTOR_PROMPT_TEMPLATE = """
 """
 
 
+def _parse_replan_reason(response_text: str) -> str:
+    """从含 [REPLAN] 的回复中解析原因。"""
+    if "[REPLAN]" not in response_text:
+        return ""
+    part = response_text.split("[REPLAN]", 1)[-1].strip()
+    return part[:200] if part else "执行器请求重规划"
+
+
 class Executor:
     def __init__(self, llm_client: HelloAgentsLLM):
         self.llm_client = llm_client
 
-    def execute(self, question: str, plan: list[str]) -> str:
-        history = ""
+    def execute_one_step(
+        self,
+        question: str,
+        plan: list[str],
+        history: str,
+        current_step: str,
+    ) -> str:
+        """执行单步，返回该步的回复文本。"""
+        prompt = EXECUTOR_PROMPT_TEMPLATE.format(
+            question=question,
+            plan=plan,
+            history=history if history else "无",
+            current_step=current_step,
+        )
+        messages = [{"role": "user", "content": prompt}]
+        return self.llm_client.think(messages=messages) or ""
+
+    def execute(
+        self,
+        question: str,
+        plan: list[str],
+        replanner: Replanner | None = None,
+        max_replans: int = 2,
+    ) -> str:
+        remaining_plan = list(plan)
+        completed: list[tuple[str, str]] = []
+        replan_count = 0
         final_answer = ""
+        step_index = 0
 
         print("\n--- 正在执行计划 ---")
-        for i, step in enumerate(plan, 1):
-            print(f"\n-> 正在执行步骤 {i}/{len(plan)}: {step}")
-            prompt = EXECUTOR_PROMPT_TEMPLATE.format(
-                question=question,
-                plan=plan,
-                history=history if history else "无",
-                current_step=step,
-            )
-            messages = [{"role": "user", "content": prompt}]
+        while remaining_plan and replan_count <= max_replans:
+            current_step = remaining_plan[0]
+            step_index += 1
+            print(f"\n-> 正在执行步骤 {step_index}/{len(plan)}: {current_step}")
+            history = "\n".join(
+                f"步骤: {s}\n结果: {r}" for s, r in completed
+            ) or "无"
 
-            response_text = self.llm_client.think(messages=messages) or ""
+            try:
+                response_text = self.execute_one_step(
+                    question=question,
+                    plan=plan,
+                    history=history,
+                    current_step=current_step,
+                )
+            except Exception as e:
+                response_text = f"[REPLAN] {e!s}"
 
-            history += f"步骤 {i}: {step}\n结果: {response_text}\n\n"
+            if "[REPLAN]" in response_text and replanner is not None:
+                reason = _parse_replan_reason(response_text) or "执行器请求重规划"
+                new_plan = replanner.replan(
+                    question=question,
+                    plan=plan,
+                    completed=completed,
+                    failed_step=current_step,
+                    failure_reason=reason,
+                )
+                replan_count += 1
+                remaining_plan = new_plan if new_plan else []
+                if not remaining_plan:
+                    break
+                continue
+
+            completed.append((current_step, response_text))
+            remaining_plan.pop(0)
             final_answer = response_text
-            print(f"✅ 步骤 {i} 已完成，结果: {final_answer}")
+            print(f"✅ 步骤 {step_index} 已完成，结果: {final_answer}")
 
         return final_answer
 
