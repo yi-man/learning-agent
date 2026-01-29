@@ -133,3 +133,27 @@ def test_parse_output_missing_fields():
     thought, action = agent._parse_output(json_text)
     assert thought == "只有思考"
     assert action is None
+
+
+def test_full_integration():
+    """集成测试：模拟完整的 ReAct 流程"""
+    from unittest.mock import Mock
+
+    mock_llm = Mock()
+    # 模拟多轮对话
+    mock_llm.think.side_effect = [
+        '{"thought": "需要搜索信息", "action": {"type": "tool_call", "tool_name": "Search", "input": "华为手机"}}',
+        '{"thought": "根据搜索结果，可以给出答案", "action": {"type": "finish", "input": "华为最新的手机是 Mate 60 Pro"}}',
+    ]
+
+    mock_tool_executor = Mock()
+    mock_tool = Mock(return_value="华为 Mate 60 Pro 是2023年发布的最新旗舰手机")
+    mock_tool_executor.getTool.return_value = mock_tool
+    mock_tool_executor.getAvailableTools.return_value = "Search: 搜索工具"
+
+    agent = ReActJSONAgent(llm_client=mock_llm, tool_executor=mock_tool_executor, max_steps=5)
+    result = agent.run("华为最新的手机是哪一款？")
+
+    assert result == "华为最新的手机是 Mate 60 Pro"
+    assert mock_tool.called
+    assert len(agent.history) == 2  # Action + Observation
