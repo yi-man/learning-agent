@@ -18,6 +18,7 @@ def test_parse_json_output():
     thought, action = agent._parse_output(json_text)
 
     assert thought == "我需要搜索"
+    assert isinstance(action, dict)
     assert action["type"] == "tool_call"
     assert action["tool_name"] == "Search"
     assert action["input"] == "华为手机"
@@ -31,3 +32,26 @@ def test_prompt_contains_json_format():
     assert "JSON" in prompt or "json" in prompt
     assert "thought" in prompt.lower()
     assert "action" in prompt.lower()
+
+
+def test_parse_action_from_json():
+    """测试从 JSON action 中解析工具名和输入"""
+    agent = ReActJSONAgent(llm_client=None, tool_executor=None)
+
+    # 测试 tool_call 类型
+    action_tool = {"type": "tool_call", "tool_name": "Search", "input": "华为手机"}
+    tool_name, tool_input = agent._parse_action(action_tool)
+    assert tool_name == "Search"
+    assert tool_input == "华为手机"
+
+    # 测试 finish 类型
+    action_finish = {"type": "finish", "input": "最终答案"}
+    tool_name, tool_input = agent._parse_action(action_finish)
+    assert tool_name == "Finish"
+    assert tool_input == "最终答案"
+
+    # 测试无效 action
+    action_invalid = {"type": "unknown"}
+    tool_name, tool_input = agent._parse_action(action_invalid)
+    assert tool_name is None
+    assert tool_input is None

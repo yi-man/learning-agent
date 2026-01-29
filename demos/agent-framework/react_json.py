@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict, Any
 import json
 import re
 
@@ -73,7 +73,23 @@ class ReActJSONAgent:
 
             data = json.loads(json_str)
             thought = data.get("thought")
-            action = data.get("action")
+            action = data.get("action")  # 返回 dict，不是字符串
             return thought, action
         except (json.JSONDecodeError, KeyError, AttributeError):
+            return None, None
+
+    def _parse_action(self, action: Dict[str, Any):
+        """从 JSON action 对象中解析工具名和输入"""
+        if not isinstance(action, dict):
+            return None, None
+
+        action_type = action.get("type")
+        if action_type == "tool_call":
+            tool_name = action.get("tool_name")
+            tool_input = action.get("input")
+            return tool_name, tool_input
+        elif action_type == "finish":
+            final_answer = action.get("input", "")
+            return "Finish", final_answer
+        else:
             return None, None
