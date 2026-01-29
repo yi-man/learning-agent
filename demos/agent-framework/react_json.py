@@ -78,7 +78,7 @@ class ReActJSONAgent:
         except (json.JSONDecodeError, KeyError, AttributeError):
             return None, None
 
-    def _parse_action(self, action: Dict[str, Any):
+    def _parse_action(self, action: Dict[str, Any]):
         """从 JSON action 对象中解析工具名和输入"""
         if not isinstance(action, dict):
             return None, None
