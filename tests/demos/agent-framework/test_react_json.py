@@ -92,7 +92,9 @@ def test_run_with_tool_call():
     mock_tool_executor.getTool.return_value = mock_tool
     mock_tool_executor.getAvailableTools.return_value = "Search: 搜索工具"
 
-    agent = ReActJSONAgent(llm_client=mock_llm, tool_executor=mock_tool_executor, max_steps=5)
+    agent = ReActJSONAgent(
+        llm_client=mock_llm, tool_executor=mock_tool_executor, max_steps=5
+    )
     result = agent.run("测试问题")
 
     assert result == "答案"
@@ -135,6 +137,93 @@ def test_parse_output_missing_fields():
     assert action is None
 
 
+def test_agent_tracks_tool_errors():
+    """测试智能体跟踪工具错误"""
+    from unittest.mock import Mock
+
+    mock_llm = Mock()
+    mock_llm.think.side_effect = [
+        '{"thought": "尝试调用工具", "action": {"type": "tool_call", "tool_name": "NonExistentTool", "input": "test"}}',
+        '{"thought": "再次尝试", "action": {"type": "tool_call", "tool_name": "NonExistentTool", "input": "test"}}',
+        '{"thought": "使用正确工具", "action": {"type": "tool_call", "tool_name": "Search", "input": "test"}}',
+        '{"thought": "已有结果", "action": {"type": "finish", "input": "测试答案"}}',
+    ]
+
+    mock_tool_executor = Mock()
+    mock_tool_executor.getTool.side_effect = [
+        None,  # 第一次：工具不存在
+        None,  # 第二次：工具不存在
+        Mock(return_value="搜索结果"),  # 第三次：成功
+    ]
+    mock_tool_executor.getAvailableTools.return_value = "- Search: 搜索工具"
+
+    agent = ReActJSONAgent(
+        llm_client=mock_llm,
+        tool_executor=mock_tool_executor,
+        max_steps=5,
+        max_consecutive_errors=2,
+    )
+
+    # 运行智能体
+    agent.run("测试问题")
+
+    # 验证错误被跟踪
+    assert agent.error_tracker.consecutive_errors == 0  # 最后一次成功，已重置
+    assert agent.error_tracker.error_patterns["tool_not_found"] >= 2
+
+
+def test_agent_uses_calculator():
+    """测试智能体使用计算器工具"""
+    from unittest.mock import Mock
+    from tools import calculator, ToolExecutor
+
+    mock_llm = Mock()
+    mock_llm.think.side_effect = [
+        '{"thought": "需要计算表达式", "action": {"type": "tool_call", "tool_name": "Calculator", "input": "(123 + 456) * 789 / 12"}}',
+        '{"thought": "计算完成，可以给出答案", "action": {"type": "finish", "input": "结果是 38069.25"}}',
+    ]
+
+    tool_executor = ToolExecutor()
+    tool_executor.registerTool("Calculator", "计算器工具", calculator)
+
+    agent = ReActJSONAgent(
+        llm_client=mock_llm, tool_executor=tool_executor, max_steps=5
+    )
+    result = agent.run("计算 (123 + 456) * 789 / 12")
+
+    assert "38069.25" in result or "38069" in result
+
+
+def test_error_recovery_mechanism():
+    """测试错误恢复机制"""
+    from unittest.mock import Mock
+    from tools import calculator, ToolExecutor
+
+    mock_llm = Mock()
+    mock_llm.think.side_effect = [
+        '{"thought": "尝试错误工具", "action": {"type": "tool_call", "tool_name": "WrongTool", "input": "test"}}',
+        '{"thought": "再次尝试错误工具", "action": {"type": "tool_call", "tool_name": "WrongTool", "input": "test"}}',
+        '{"thought": "第三次尝试错误工具", "action": {"type": "tool_call", "tool_name": "WrongTool", "input": "test"}}',
+        '{"thought": "使用正确工具", "action": {"type": "tool_call", "tool_name": "Calculator", "input": "2 + 3"}}',
+        '{"thought": "完成", "action": {"type": "finish", "input": "答案是 5"}}',
+    ]
+
+    tool_executor = ToolExecutor()
+    tool_executor.registerTool("Calculator", "计算器工具", calculator)
+
+    agent = ReActJSONAgent(
+        llm_client=mock_llm,
+        tool_executor=tool_executor,
+        max_steps=10,
+        max_consecutive_errors=3,
+    )
+    result = agent.run("计算 2 + 3")
+
+    assert agent.error_tracker.error_patterns["tool_not_found"] >= 3
+    assert "5" in result
+    assert agent.error_tracker.consecutive_errors == 0
+
+
 def test_full_integration():
     """集成测试：模拟完整的 ReAct 流程"""
     from unittest.mock import Mock
@@ -151,7 +240,9 @@ def test_full_integration():
     mock_tool_executor.getTool.return_value = mock_tool
     mock_tool_executor.getAvailableTools.return_value = "Search: 搜索工具"
 
-    agent = ReActJSONAgent(llm_client=mock_llm, tool_executor=mock_tool_executor, max_steps=5)
+    agent = ReActJSONAgent(
+        llm_client=mock_llm, tool_executor=mock_tool_executor, max_steps=5
+    )
     result = agent.run("华为最新的手机是哪一款？")
 
     assert result == "华为最新的手机是 Mate 60 Pro"

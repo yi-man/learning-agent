@@ -1,3 +1,4 @@
+import math
 import os
 from typing import Dict, Any, Callable, Optional
 
@@ -6,6 +7,45 @@ from serpapi import SerpApiClient  # type: ignore[import-untyped]
 
 # 加载 .env 文件中的环境变量
 load_dotenv()
+
+
+def calculator(expression: str) -> str:
+    """
+    一个安全的数学计算器工具，可以执行数学表达式。
+    支持基础运算（加减乘除、括号）和高级运算（幂、开方、三角函数、对数等）。
+
+    参数:
+        expression: 数学表达式字符串，例如 "(123 + 456) * 789 / 12"
+
+    返回:
+        计算结果字符串，如果出错则返回错误信息
+    """
+    print(f"🧮 正在执行 [Calculator] 计算: {expression}")
+    try:
+        # 创建安全的操作符字典
+        safe_dict = {
+            "__builtins__": {},
+            "abs": abs,
+            "round": round,
+            "min": min,
+            "max": max,
+            "sum": sum,
+            "pow": pow,
+            "math": math,
+        }
+
+        # 使用 eval 执行表达式（在受限环境中）
+        result = eval(expression, safe_dict)
+
+        # 格式化结果
+        if isinstance(result, float):
+            # 如果是整数形式的浮点数，返回整数
+            if result.is_integer():
+                return str(int(result))
+            return str(result)
+        return str(result)
+    except Exception as e:
+        return f"错误：计算失败 - {str(e)}。请确保表达式是有效的数学表达式。"
 
 
 def search(query: str) -> str:
