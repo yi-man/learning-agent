@@ -56,3 +56,25 @@ def test_execute_with_replan_on_replan_marker():
         max_replans=2,
     )
     assert "替代步骤1的结果" in result or result == "替代步骤1的结果"
+
+
+def test_agent_uses_replanner():
+    """PlanAndSolveAgent.run 调用 executor.execute 时应传入 replanner 与 max_replans"""
+
+    class MockLLM:
+        def think(self, messages):
+            content = messages[0]["content"]
+            if "请严格按照以下格式输出你的计划" in content:
+                return '```python\n["步1", "步2"]\n```'
+            return "步1结果"
+
+    from unittest.mock import patch
+    from plan_and_solve import PlanAndSolveAgent
+
+    agent = PlanAndSolveAgent(MockLLM())
+    with patch.object(agent.executor, "execute", wraps=agent.executor.execute) as m:
+        agent.run("test question")
+        m.assert_called_once()
+        call_kw = m.call_args[1]
+        assert call_kw.get("replanner") is agent.replanner
+        assert call_kw.get("max_replans") == 2
