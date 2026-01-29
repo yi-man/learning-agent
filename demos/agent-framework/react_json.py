@@ -93,3 +93,57 @@ class ReActJSONAgent:
             return "Finish", final_answer
         else:
             return None, None
+
+    def run(self, question: str):
+        """运行 ReAct 循环，使用 JSON 格式解析"""
+        self.history = []
+        current_step = 0
+
+        while current_step < self.max_steps:
+            current_step += 1
+            print(f"\n--- 第 {current_step} 步 ---")
+
+            tools_desc = self.tool_executor.getAvailableTools()
+            history_str = "\n".join(self.history)
+            prompt = self._build_prompt(question, tools_desc, history_str)
+
+            messages = [{"role": "user", "content": prompt}]
+            response_text = self.llm_client.think(messages=messages)
+            if not response_text:
+                print("错误：LLM未能返回有效响应。")
+                break
+
+            thought, action = self._parse_output(response_text)
+            if thought:
+                print(f"🤔 思考: {thought}")
+            if not action:
+                print("警告：未能解析出有效的Action，流程终止。")
+                break
+
+            # 解析 action（现在是 dict）
+            tool_name, tool_input = self._parse_action(action)
+            if not tool_name:
+                self.history.append("Observation: 无效的Action格式，请检查。")
+                continue
+
+            if tool_name == "Finish":
+                # 如果是Finish指令，提取最终答案并结束
+                print(f"🎉 最终答案: {tool_input}")
+                return tool_input
+
+            print(f"🎬 行动: {tool_name}[{tool_input}]")
+            tool_function = self.tool_executor.getTool(tool_name)
+            observation = (
+                tool_function(tool_input)
+                if tool_function
+                else f"错误：未找到名为 '{tool_name}' 的工具。"
+            )
+
+            print(f"👀 观察: {observation}")
+            # 记录 action 为字符串格式（保持兼容）
+            action_str = f"{tool_name}[{tool_input}]"
+            self.history.append(f"Action: {action_str}")
+            self.history.append(f"Observation: {observation}")
+
+        print("已达到最大步数，流程终止。")
+        return None

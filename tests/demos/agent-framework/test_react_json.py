@@ -55,3 +55,22 @@ def test_parse_action_from_json():
     tool_name, tool_input = agent._parse_action(action_invalid)
     assert tool_name is None
     assert tool_input is None
+
+
+def test_run_with_finish_action():
+    """测试 run 方法处理 finish action"""
+    from unittest.mock import Mock
+
+    mock_llm = Mock()
+    mock_llm.think.return_value = (
+        '{"thought": "已完成", "action": {"type": "finish", "input": "最终答案"}}'
+    )
+
+    mock_tool_executor = Mock()
+    mock_tool_executor.getAvailableTools.return_value = "工具列表"
+
+    agent = ReActJSONAgent(llm_client=mock_llm, tool_executor=mock_tool_executor)
+    result = agent.run("测试问题")
+
+    assert result == "最终答案"
+    mock_llm.think.assert_called_once()
