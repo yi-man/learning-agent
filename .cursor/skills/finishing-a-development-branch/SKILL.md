@@ -67,6 +67,8 @@ Which option?
 
 #### Option 1: Merge Locally
 
+**Use squash merge to keep the entire feature as a single commit point:**
+
 ```bash
 # Switch to base branch
 git checkout <base-branch>
@@ -74,8 +76,11 @@ git checkout <base-branch>
 # Pull latest
 git pull
 
-# Merge feature branch
-git merge <feature-branch>
+# Squash merge feature branch (entire feature as one commit)
+git merge --squash <feature-branch>
+
+# Commit with descriptive message for the entire feature
+git commit -m "feat: <descriptive feature name>"
 
 # Verify tests on merged result
 <test command>
@@ -83,6 +88,8 @@ git merge <feature-branch>
 # If tests pass
 git branch -d <feature-branch>
 ```
+
+**Why squash merge:** The feature branch may contain many small commits from TDD cycles. Squash merge combines them into a single commit, keeping the base branch history clean with each feature as one logical unit.
 
 Then: Cleanup worktree (Step 5)
 
@@ -92,16 +99,20 @@ Then: Cleanup worktree (Step 5)
 # Push branch
 git push -u origin <feature-branch>
 
-# Create PR
+# Create PR (note: use squash merge when merging the PR)
 gh pr create --title "<title>" --body "$(cat <<'EOF'
 ## Summary
 <2-3 bullets of what changed>
 
 ## Test Plan
 - [ ] <verification steps>
+
+**Note:** This PR should be merged using squash merge to keep the entire feature as a single commit.
 EOF
 )"
 ```
+
+**Note:** When merging the PR, use squash merge option to combine all commits from the feature branch into one commit on the base branch.
 
 Then: Cleanup worktree (Step 5)
 

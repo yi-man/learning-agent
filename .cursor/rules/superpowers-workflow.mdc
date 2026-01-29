@@ -7,6 +7,22 @@ alwaysApply: true
 
 本项目集成了 [Superpowers](https://github.com/obra/superpowers) 开发工作流系统，提供标准化的软件开发流程。
 
+## ⚠️ 对话开始时的强制要求
+
+**重要：在每次对话开始时，必须首先使用 `using-superpowers` skill。**
+
+这是一个**强制要求**，不可跳过。`using-superpowers` skill 会建立如何找到和使用技能的基础，确保后续正确使用 Superpowers 工作流。
+
+即使任务看起来很简单，也必须先使用 `using-superpowers` skill 来建立正确的工作流程。
+
+## 使用技能时的告知要求
+
+**每次使用任一 skill 时，必须明确告知用户正在使用哪个 skill 以及用途。**
+
+- 在开始执行该 skill 前，用一句话说明：例如「我正在使用 `brainstorming` skill 来理解需求并探索设计方案。」
+- 这样用户始终知道当前处于工作流的哪一步、用到了哪个技能。
+- 各 skill 自带的「Announce at start」也应遵守，与本要求一致。
+
 ## 核心工作流
 
 ### 1. Brainstorming（设计阶段）
@@ -17,15 +33,30 @@ alwaysApply: true
 - 探索不同的设计方案
 - 逐步验证设计
 
-### 2. Writing Plans（计划阶段）
+**使用前必须告知用户：** 例如「我正在使用 `brainstorming` skill 理解需求并探索设计方案。」
 
-设计确认后，使用 `writing-plans` skill 创建详细的实施计划：
+### 2. 创建隔离工作区（using-git-worktrees）
+
+设计确认、准备进入实施前，使用 `using-git-worktrees` skill：
+
+- 在独立工作树（worktree）中开发，与当前工作区隔离
+- 按优先级选择工作树目录（`.worktrees` / `worktrees` / CLAUDE.md 约定 / 询问用户）
+- 必须确认工作树目录已加入 `.gitignore`，再创建 worktree
+- 创建功能分支与对应 worktree，后续写计划与实施均在该 worktree 中进行
+
+**使用前必须告知用户：** 例如「我正在使用 `using-git-worktrees` skill 创建隔离工作区。」
+
+### 3. Writing Plans（计划阶段）
+
+在（上述）工作树上下文中，使用 `writing-plans` skill 创建详细的实施计划：
 
 - 将工作分解为小任务（2-5分钟每个）
 - 明确文件路径、代码、测试步骤
 - 遵循 TDD、YAGNI、DRY 原则
 
-### 3. Test-Driven Development（实施阶段）
+**使用前必须告知用户：** 例如「我正在使用 `writing-plans` skill 创建实施计划。」
+
+### 4. Test-Driven Development（实施阶段）
 
 实施时，使用 `test-driven-development` skill：
 
@@ -33,13 +64,76 @@ alwaysApply: true
 - 写最小代码让测试通过
 - 重构保持测试通过
 
-### 4. Systematic Debugging（调试阶段）
+**使用前必须告知用户：** 例如「我正在使用 `test-driven-development` skill 按 TDD 实施。」
+
+**开发过程中的提交策略：**
+- 在 worktree 的功能分支中，每个 TDD 循环完成后进行提交（RED → GREEN → REFACTOR 后）
+- 每个小任务完成后提交，保持提交粒度小、信息清晰
+- 提交信息遵循约定式提交格式（feat/fix/refactor 等）
+- 这些提交用于开发过程中的版本控制和回滚，便于 TDD 流程
+
+### 5. Systematic Debugging（调试阶段）
 
 遇到问题时，使用 `systematic-debugging` skill：
 
 - 4阶段根因分析流程
 - 防御性深度检查
 - 条件等待技术
+
+**使用前必须告知用户：** 例如「我正在使用 `systematic-debugging` skill 做根因分析。」
+
+### 6. Code Review（代码审查阶段）
+
+**必须进行代码审查的时机：**
+- Subagent-Driven Development：每个任务完成后
+- Executing Plans：每批（3个任务）完成后
+- 完成主要功能后
+- 合并到 main 之前
+
+**使用 `requesting-code-review` skill 请求审查：**
+- 派遣 code-reviewer 子代理进行审查
+- 获取反馈并分类（Critical/Important/Minor）
+- 立即修复 Critical 问题
+- 在继续前修复 Important 问题
+- 记录 Minor 问题稍后处理
+
+**使用 `receiving-code-review` skill 处理反馈：**
+- 完整阅读反馈，不要立即反应
+- 理解要求（用自己的话重述或询问）
+- 验证代码库实际情况
+- 评估技术可行性
+- 技术性确认或有理由的推回
+- 逐项实施并测试
+
+**核心原则：**
+- 审查要早、要频繁
+- 技术严谨性优先于表面同意
+- 验证后再实施
+- 必要时进行技术性推回
+
+**使用前必须告知用户：** 请求审查时说明「正在使用 `requesting-code-review` skill」；处理反馈时说明「正在使用 `receiving-code-review` skill 处理审查意见。」
+
+### 7. Finishing Development Branch（完成开发分支）
+
+所有任务完成后，使用 `finishing-a-development-branch` skill：
+
+- 验证所有测试通过
+- 展示 4 个选项（本地合并/创建 PR/保留分支/丢弃）
+- 执行选择
+- 清理工作树（如适用）
+
+**合并策略（重要）：**
+- **整个功能作为一个整体 merge 回原分支**
+- 使用 **squash merge** 或 **rebase + merge**，将功能分支的所有提交合并为一个提交点
+- 这样原分支的历史保持清晰，每个功能点对应一个提交
+- 功能分支内的多次提交（用于 TDD）不会污染原分支的历史
+
+**合并选项说明：**
+- **选项 1（本地合并）：** 使用 `git merge --squash <feature-branch>` 将整个功能 squash 合并到原分支
+- **选项 2（创建 PR）：** 推送功能分支，创建 PR，在 PR 中可以选择 squash merge
+- 合并后的提交信息应清晰描述整个功能点（例如："feat: add user authentication"）
+
+**使用前必须告知用户：** 例如「我正在使用 `finishing-a-development-branch` skill 完成本分支。」
 
 ## 技能使用规范
 
@@ -58,10 +152,14 @@ alwaysApply: true
 所有 Superpowers skills 已安装在 `.cursor/skills/` 目录中，包括：
 
 - brainstorming
+- using-git-worktrees
 - writing-plans
 - test-driven-development
 - executing-plans
 - systematic-debugging
+- requesting-code-review
+- receiving-code-review
+- finishing-a-development-branch
 - 以及其他协作和调试技能
 
 查看 `.cursor/skills/` 目录了解完整的技能列表。
