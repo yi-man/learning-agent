@@ -74,3 +74,27 @@ def test_run_with_finish_action():
 
     assert result == "最终答案"
     mock_llm.think.assert_called_once()
+
+
+def test_run_with_tool_call():
+    """测试 run 方法处理工具调用"""
+    from unittest.mock import Mock
+
+    mock_llm = Mock()
+    # 第一次调用返回工具调用，第二次返回 finish
+    mock_llm.think.side_effect = [
+        '{"thought": "需要搜索", "action": {"type": "tool_call", "tool_name": "Search", "input": "测试"}}',
+        '{"thought": "已完成", "action": {"type": "finish", "input": "答案"}}',
+    ]
+
+    mock_tool_executor = Mock()
+    mock_tool = Mock(return_value="搜索结果")
+    mock_tool_executor.getTool.return_value = mock_tool
+    mock_tool_executor.getAvailableTools.return_value = "Search: 搜索工具"
+
+    agent = ReActJSONAgent(llm_client=mock_llm, tool_executor=mock_tool_executor, max_steps=5)
+    result = agent.run("测试问题")
+
+    assert result == "答案"
+    assert mock_tool.called
+    assert len(mock_llm.think.call_args_list) == 2
