@@ -48,7 +48,11 @@ Or ask: "This branch split from main - is that correct?"
 
 ### Step 3: Present Options
 
-Present exactly these 4 options:
+**If the user already confirmed review and asked to merge** (e.g. from executing-plans flow: "review done", "选 1", "merge"):
+- Briefly note: "You confirmed review; proceeding with option 1."
+- Skip waiting for a choice; go to Step 4 and execute option 1 (squash merge). If the user then says something different (e.g. "actually create a PR"), follow their new choice.
+
+**Otherwise**, present exactly these 4 options:
 
 ```
 Implementation complete. What would you like to do?
@@ -205,7 +209,7 @@ git worktree remove <worktree-path>
 
 **Called by:**
 - **subagent-driven-development** (Step 7) - After all tasks complete
-- **executing-plans** (Step 5) - After all batches complete
+- **executing-plans** (Step 4) - After all tasks complete and user confirms review; execute option 1
 
 **Pairs with:**
 - **using-git-worktrees** - Cleans up worktree created by that skill

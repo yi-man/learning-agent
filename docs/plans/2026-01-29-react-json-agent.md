@@ -13,6 +13,7 @@
 ## Task 1: JSON 输出解析器
 
 **Files:**
+
 - Create: `demos/agent-framework/react_json.py`
 - Test: `tests/demos/agent-framework/test_react_json.py`
 
@@ -26,11 +27,11 @@ from demos.agent_framework.react_json import ReActJSONAgent
 def test_parse_json_output():
     """测试解析 JSON 格式的 LLM 输出"""
     agent = ReActJSONAgent(llm_client=None, tool_executor=None)
-    
+
     # 测试正常的 JSON 输出
     json_text = '{"thought": "我需要搜索", "action": {"type": "tool_call", "tool_name": "Search", "input": "华为手机"}}'
     thought, action = agent._parse_output(json_text)
-    
+
     assert thought == "我需要搜索"
     assert action["type"] == "tool_call"
     assert action["tool_name"] == "Search"
@@ -82,7 +83,7 @@ Expected: FAIL with assertion error (thought/action is None)
 
 Modify: `demos/agent-framework/react_json.py`
 
-```python
+````python
     def _parse_output(self, text: str):
         """解析 JSON 格式的 LLM 输出"""
         try:
@@ -97,14 +98,14 @@ Modify: `demos/agent-framework/react_json.py`
                     json_str = json_match.group(0)
                 else:
                     return None, None
-            
+
             data = json.loads(json_str)
             thought = data.get("thought")
             action = data.get("action")
             return thought, action
         except (json.JSONDecodeError, KeyError, AttributeError):
             return None, None
-```
+````
 
 **Step 6: Run test to verify it passes**
 
@@ -123,6 +124,7 @@ git commit -m "feat: add JSON output parser for ReAct agent"
 ## Task 2: JSON Prompt Template
 
 **Files:**
+
 - Modify: `demos/agent-framework/react_json.py`
 
 **Step 1: Write the failing test for prompt format**
@@ -132,7 +134,7 @@ def test_prompt_contains_json_format():
     """测试 prompt 包含 JSON 格式要求"""
     agent = ReActJSONAgent(llm_client=None, tool_executor=None)
     prompt = agent._build_prompt("测试问题", "工具描述", "")
-    
+
     assert "JSON" in prompt or "json" in prompt
     assert "thought" in prompt.lower()
     assert "action" in prompt.lower()
@@ -141,15 +143,15 @@ def test_prompt_contains_json_format():
 **Step 2: Run test to verify it fails**
 
 Run: `pytest tests/demos/agent-framework/test_react_json.py::test_prompt_contains_json_format -v`
-Expected: FAIL with "AttributeError: 'ReActJSONAgent' object has no attribute '_build_prompt'"
+Expected: FAIL with "AttributeError: 'ReActJSONAgent' object has no attribute '\_build_prompt'"
 
-**Step 3: Add prompt template and _build_prompt method**
+**Step 3: Add prompt template and \_build_prompt method**
 
 Modify: `demos/agent-framework/react_json.py`
 
 Add at top of file:
 
-```python
+````python
 REACT_JSON_PROMPT_TEMPLATE = """
 请注意，你是一个有能力调用外部工具的智能助手。
 
@@ -170,9 +172,10 @@ REACT_JSON_PROMPT_TEMPLATE = """
     "input": "工具输入或最终答案（当 type 为 finish 时，这是最终答案）"
   }}
 }}
-```
+````
 
 重要说明：
+
 - 当 type 为 "tool_call" 时，必须提供 tool_name 和 input
 - 当 type 为 "finish" 时，只需提供 input（最终答案）
 - 必须输出有效的 JSON，不要添加任何额外的文本或解释
@@ -181,7 +184,8 @@ REACT_JSON_PROMPT_TEMPLATE = """
 Question: {question}
 History: {history}
 """
-```
+
+````
 
 Add method to class:
 
@@ -191,7 +195,7 @@ Add method to class:
         return REACT_JSON_PROMPT_TEMPLATE.format(
             tools=tools, question=question, history=history
         )
-```
+````
 
 **Step 4: Run test to verify it passes**
 
@@ -210,6 +214,7 @@ git commit -m "feat: add JSON format prompt template"
 ## Task 3: Action Parser from JSON
 
 **Files:**
+
 - Modify: `demos/agent-framework/react_json.py`
 - Test: `tests/demos/agent-framework/test_react_json.py`
 
@@ -219,19 +224,19 @@ git commit -m "feat: add JSON format prompt template"
 def test_parse_action_from_json():
     """测试从 JSON action 中解析工具名和输入"""
     agent = ReActJSONAgent(llm_client=None, tool_executor=None)
-    
+
     # 测试 tool_call 类型
     action_tool = {"type": "tool_call", "tool_name": "Search", "input": "华为手机"}
     tool_name, tool_input = agent._parse_action(action_tool)
     assert tool_name == "Search"
     assert tool_input == "华为手机"
-    
+
     # 测试 finish 类型
     action_finish = {"type": "finish", "input": "最终答案"}
     tool_name, tool_input = agent._parse_action(action_finish)
     assert tool_name == "Finish"
     assert tool_input == "最终答案"
-    
+
     # 测试无效 action
     action_invalid = {"type": "unknown"}
     tool_name, tool_input = agent._parse_action(action_invalid)
@@ -242,9 +247,9 @@ def test_parse_action_from_json():
 **Step 2: Run test to verify it fails**
 
 Run: `pytest tests/demos/agent-framework/test_react_json.py::test_parse_action_from_json -v`
-Expected: FAIL with "AttributeError: '_parse_action' method not found or wrong signature"
+Expected: FAIL with "AttributeError: '\_parse_action' method not found or wrong signature"
 
-**Step 3: Implement _parse_action method**
+**Step 3: Implement \_parse_action method**
 
 Modify: `demos/agent-framework/react_json.py`
 
@@ -253,7 +258,7 @@ Modify: `demos/agent-framework/react_json.py`
         """从 JSON action 对象中解析工具名和输入"""
         if not isinstance(action, dict):
             return None, None
-        
+
         action_type = action.get("type")
         if action_type == "tool_call":
             tool_name = action.get("tool_name")
@@ -266,11 +271,11 @@ Modify: `demos/agent-framework/react_json.py`
             return None, None
 ```
 
-**Step 4: Update _parse_output to return action dict**
+**Step 4: Update \_parse_output to return action dict**
 
 Modify: `demos/agent-framework/react_json.py` - update `_parse_output`:
 
-```python
+````python
     def _parse_output(self, text: str):
         """解析 JSON 格式的 LLM 输出"""
         try:
@@ -285,14 +290,14 @@ Modify: `demos/agent-framework/react_json.py` - update `_parse_output`:
                     json_str = json_match.group(0)
                 else:
                     return None, None
-            
+
             data = json.loads(json_str)
             thought = data.get("thought")
             action = data.get("action")  # 返回 dict，不是字符串
             return thought, action
         except (json.JSONDecodeError, KeyError, AttributeError):
             return None, None
-```
+````
 
 **Step 5: Update test_parse_json_output to match new return format**
 
@@ -302,11 +307,11 @@ Modify: `tests/demos/agent-framework/test_react_json.py`
 def test_parse_json_output():
     """测试解析 JSON 格式的 LLM 输出"""
     agent = ReActJSONAgent(llm_client=None, tool_executor=None)
-    
+
     # 测试正常的 JSON 输出
     json_text = '{"thought": "我需要搜索", "action": {"type": "tool_call", "tool_name": "Search", "input": "华为手机"}}'
     thought, action = agent._parse_output(json_text)
-    
+
     assert thought == "我需要搜索"
     assert isinstance(action, dict)
     assert action["type"] == "tool_call"
@@ -331,6 +336,7 @@ git commit -m "feat: implement JSON action parser"
 ## Task 4: Main Run Loop
 
 **Files:**
+
 - Modify: `demos/agent-framework/react_json.py`
 - Test: `tests/demos/agent-framework/test_react_json.py`
 
@@ -343,12 +349,12 @@ def test_run_with_finish_action():
     """测试 run 方法处理 finish action"""
     mock_llm = Mock()
     mock_llm.think.return_value = '{"thought": "已完成", "action": {"type": "finish", "input": "最终答案"}}'
-    
+
     mock_tool_executor = Mock()
-    
+
     agent = ReActJSONAgent(llm_client=mock_llm, tool_executor=mock_tool_executor)
     result = agent.run("测试问题")
-    
+
     assert result == "最终答案"
     mock_llm.think.assert_called_once()
 ```
@@ -435,6 +441,7 @@ git commit -m "feat: implement main run loop with JSON parsing"
 ## Task 5: Tool Call Integration
 
 **Files:**
+
 - Modify: `demos/agent-framework/react_json.py`
 - Test: `tests/demos/agent-framework/test_react_json.py`
 
@@ -449,15 +456,15 @@ def test_run_with_tool_call():
         '{"thought": "需要搜索", "action": {"type": "tool_call", "tool_name": "Search", "input": "测试"}}',
         '{"thought": "已完成", "action": {"type": "finish", "input": "答案"}}'
     ]
-    
+
     mock_tool_executor = Mock()
     mock_tool = Mock(return_value="搜索结果")
     mock_tool_executor.getTool.return_value = mock_tool
     mock_tool_executor.getAvailableTools.return_value = "Search: 搜索工具"
-    
+
     agent = ReActJSONAgent(llm_client=mock_llm, tool_executor=mock_tool_executor, max_steps=5)
     result = agent.run("测试问题")
-    
+
     assert result == "答案"
     assert mock_tool.called
     assert len(mock_llm.think.call_args_list) == 2
@@ -485,44 +492,47 @@ git commit -m "test: add tool call integration test"
 ## Task 6: Error Handling and Edge Cases
 
 **Files:**
+
 - Modify: `demos/agent-framework/react_json.py`
 - Test: `tests/demos/agent-framework/test_react_json.py`
 
 **Step 1: Write tests for edge cases**
 
-```python
+````python
 def test_parse_output_with_code_block():
     """测试解析代码块中的 JSON"""
     agent = ReActJSONAgent(llm_client=None, tool_executor=None)
-    
+
     json_text = '''一些前置文本
 ```json
 {"thought": "思考", "action": {"type": "finish", "input": "答案"}}
-```
+````
+
 一些后置文本'''
-    
+
     thought, action = agent._parse_output(json_text)
     assert thought == "思考"
     assert action["type"] == "finish"
 
 def test_parse_output_invalid_json():
-    """测试无效 JSON 的处理"""
-    agent = ReActJSONAgent(llm_client=None, tool_executor=None)
-    
+"""测试无效 JSON 的处理"""
+agent = ReActJSONAgent(llm_client=None, tool_executor=None)
+
     invalid_text = "这不是 JSON 格式"
     thought, action = agent._parse_output(invalid_text)
     assert thought is None
     assert action is None
 
 def test_parse_output_missing_fields():
-    """测试缺少字段的 JSON"""
-    agent = ReActJSONAgent(llm_client=None, tool_executor=None)
-    
+"""测试缺少字段的 JSON"""
+agent = ReActJSONAgent(llm_client=None, tool_executor=None)
+
     json_text = '{"thought": "只有思考"}'
     thought, action = agent._parse_output(json_text)
     assert thought == "只有思考"
     assert action is None
-```
+
+````
 
 **Step 2: Run tests to verify they pass**
 
@@ -534,13 +544,14 @@ Expected: All tests PASS (implementation should already handle these cases)
 ```bash
 git add tests/demos/agent-framework/test_react_json.py
 git commit -m "test: add edge case tests for JSON parsing"
-```
+````
 
 ---
 
 ## Task 7: Main Entry Point
 
 **Files:**
+
 - Modify: `demos/agent-framework/react_json.py`
 
 **Step 1: Add main entry point**
@@ -578,6 +589,7 @@ git commit -m "feat: add main entry point for react_json"
 ## Task 8: Integration Test
 
 **Files:**
+
 - Test: `tests/demos/agent-framework/test_react_json.py`
 
 **Step 1: Write integration test**
@@ -591,15 +603,15 @@ def test_full_integration():
         '{"thought": "需要搜索信息", "action": {"type": "tool_call", "tool_name": "Search", "input": "华为手机"}}',
         '{"thought": "根据搜索结果，可以给出答案", "action": {"type": "finish", "input": "华为最新的手机是 Mate 60 Pro"}}'
     ]
-    
+
     mock_tool_executor = Mock()
     mock_tool = Mock(return_value="华为 Mate 60 Pro 是2023年发布的最新旗舰手机")
     mock_tool_executor.getTool.return_value = mock_tool
     mock_tool_executor.getAvailableTools.return_value = "Search: 搜索工具"
-    
+
     agent = ReActJSONAgent(llm_client=mock_llm, tool_executor=mock_tool_executor, max_steps=5)
     result = agent.run("华为最新的手机是哪一款？")
-    
+
     assert result == "华为最新的手机是 Mate 60 Pro"
     assert mock_tool.called
     assert len(agent.history) == 2  # Action + Observation
@@ -636,6 +648,7 @@ git commit -m "test: add full integration test"
 6. ✅ 有完整的测试覆盖
 
 **Next Steps:**
+
 - 可以考虑添加 JSON Schema 验证（使用 jsonschema 库）
 - 可以考虑添加 fallback 机制（JSON 解析失败时回退到正则表达式）
 - 可以考虑性能优化（缓存解析结果等）
