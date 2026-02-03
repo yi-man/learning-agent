@@ -16,6 +16,21 @@ from dotenv import load_dotenv
 # 加载环境变量（需在读取 os.getenv 前执行）
 load_dotenv()
 
+# 动态回退：当消息包含以下任一关键词时，下一棒交给 ProductManager
+ROLLBACK_KEYWORDS = (
+    "请产品经理重新审核",
+    "需求变更",
+    "REVIEW_BY_PM",
+)
+
+
+def _get_last_message_text(message) -> str:
+    """从任意消息类型中提取可读文本，用于回退关键词检测。"""
+    if hasattr(message, "to_text") and callable(getattr(message, "to_text")):
+        out = message.to_text()
+        return out if out is not None else ""
+    return getattr(message, "content", "") or ""
+
 
 def create_openai_model_client():
     """创建 OpenAI 模型客户端用于测试"""
