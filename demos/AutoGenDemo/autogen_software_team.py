@@ -7,7 +7,7 @@ import os
 
 from autogen_agentchat.agents import AssistantAgent, UserProxyAgent
 from autogen_agentchat.conditions import TextMentionTermination
-from autogen_agentchat.teams import RoundRobinGroupChat
+from autogen_agentchat.teams import SelectorGroupChat
 from autogen_agentchat.ui import Console
 from autogen_core.models import ModelFamily, ModelInfo
 from autogen_ext.models.openai import OpenAIChatCompletionClient
@@ -186,11 +186,18 @@ async def run_software_development_team():
     # 添加终止条件
     termination = TextMentionTermination("TERMINATE")
 
-    # 创建团队聊天
-    team_chat = RoundRobinGroupChat(
-        participants=[product_manager, engineer, code_reviewer, user_proxy],
+    participants = [product_manager, engineer, code_reviewer, user_proxy]
+    participant_names = [p.name for p in participants]
+
+    def selector_func(messages):
+        return select_next_speaker(messages, participant_names)
+
+    team_chat = SelectorGroupChat(
+        participants=participants,
+        model_client=model_client,
         termination_condition=termination,
-        max_turns=20,  # 增加最大轮次
+        selector_func=selector_func,
+        max_turns=20,
     )
 
     # 定义开发任务
