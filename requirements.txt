@@ -20,3 +20,9 @@ pytest-cov>=4.0.0  # 代码覆盖率插件
 black>=24.0.0  # 代码格式化
 ruff>=0.1.0  # 代码检查和格式化
 mypy>=1.0.0  # 类型检查
+
+# Langchain 案例依赖 (demos/Langchain)
+langchain>=1.0.7
+langchain_core>=1.2.8
+langchain-openai>=1.0.7
+langgraph>=1.0.0
