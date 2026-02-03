@@ -2,16 +2,16 @@
 AutoGen 软件开发团队协作案例
 """
 
-import os
 import asyncio
+import os
 
-from dotenv import load_dotenv
+from autogen_agentchat.agents import AssistantAgent, UserProxyAgent
+from autogen_agentchat.conditions import TextMentionTermination
+from autogen_agentchat.teams import RoundRobinGroupChat
+from autogen_agentchat.ui import Console
 from autogen_core.models import ModelFamily, ModelInfo
 from autogen_ext.models.openai import OpenAIChatCompletionClient
-from autogen_agentchat.agents import AssistantAgent, UserProxyAgent
-from autogen_agentchat.teams import RoundRobinGroupChat
-from autogen_agentchat.conditions import TextMentionTermination
-from autogen_agentchat.ui import Console
+from dotenv import load_dotenv
 
 # 加载环境变量（需在读取 os.getenv 前执行）
 load_dotenv()

@@ -1,5 +1,5 @@
+import requests  # type: ignore[import-untyped]
 import streamlit as st
-import requests
 
 
 # 数据获取函数
@@ -26,7 +26,7 @@ st.subheader("获取最新的比特币价格信息及其24小时价格变化趋�
 
 # 添加刷新按钮
 if st.button("刷新价格"):
-    st.experimental_rerun()
+    st.rerun()
 
 # 显示加载状态
 with st.spinner("加载中..."):
