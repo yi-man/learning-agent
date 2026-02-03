@@ -32,6 +32,29 @@ def _get_last_message_text(message) -> str:
     return getattr(message, "content", "") or ""
 
 
+def select_next_speaker(messages, participant_names):
+    """
+    根据消息历史决定下一发言者。
+    - 若最后一条消息包含回退关键词，返回 ProductManager。
+    - 否则按 participant_names 顺序轮询。
+    participant_names 顺序须为 [ProductManager, Engineer, CodeReviewer, UserProxy]。
+    """
+    if not messages:
+        return participant_names[0] if participant_names else "ProductManager"
+    last = messages[-1]
+    last_source = getattr(last, "source", None) or ""
+    text = _get_last_message_text(last)
+    if any(kw in text for kw in ROLLBACK_KEYWORDS):
+        return "ProductManager"
+    if last_source == "user":
+        return participant_names[0]
+    try:
+        idx = participant_names.index(last_source)
+    except ValueError:
+        return participant_names[0]
+    return participant_names[(idx + 1) % len(participant_names)]
+
+
 def create_openai_model_client():
     """创建 OpenAI 模型客户端用于测试"""
     model_id = os.getenv("LLM_MODEL_ID", "gpt-4o")
