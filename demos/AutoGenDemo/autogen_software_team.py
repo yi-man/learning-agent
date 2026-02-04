@@ -3,6 +3,7 @@ AutoGen 软件开发团队协作案例
 """
 
 import asyncio
+import logging
 import os
 
 from autogen_agentchat.agents import AssistantAgent, UserProxyAgent
@@ -15,6 +16,8 @@ from dotenv import load_dotenv
 
 # 加载环境变量（需在读取 os.getenv 前执行）
 load_dotenv()
+
+logger = logging.getLogger(__name__)
 
 # 动态回退：当消息包含以下任一关键词时，下一棒交给 ProductManager
 ROLLBACK_KEYWORDS = (
@@ -32,15 +35,45 @@ def _get_last_message_text(message) -> str:
     return getattr(message, "content", "") or ""
 
 
+def quality_check(messages, participant_names):
+    """
+    检测对话质量异常（首版仅循环）。
+    返回 (has_anomaly: bool, reason: str | None)，reason 为 "loop" 或 None。
+    发言者序列仅包含 source in participant_names 的消息，不包含 user。
+    """
+    if not messages or not participant_names:
+        return False, None
+    K = len(participant_names)
+    names_set = set(participant_names)
+    sources = [
+        getattr(m, "source", None)
+        for m in messages
+        if getattr(m, "source", None) in names_set
+    ]
+    if len(sources) < 2 * K:
+        return False, None
+    if sources[-K:] == sources[-2 * K : -K]:
+        return True, "loop"
+    return False, None
+
+
 def select_next_speaker(messages, participant_names):
     """
     根据消息历史决定下一发言者。
+    - 若质量监控检测到异常（循环），返回 ProductManager。
     - 若最后一条消息包含回退关键词，返回 ProductManager。
     - 否则按 participant_names 顺序轮询。
     participant_names 顺序须为 [ProductManager, Engineer, CodeReviewer, UserProxy]。
     """
     if not messages:
         return participant_names[0] if participant_names else "ProductManager"
+    has_anomaly, reason = quality_check(messages, participant_names)
+    if has_anomaly and reason:
+        logger.info(
+            "quality_monitor",
+            extra={"reason": reason, "action": "force_ProductManager"},
+        )
+        return "ProductManager"
     last = messages[-1]
     last_source = getattr(last, "source", None) or ""
     text = _get_last_message_text(last)
