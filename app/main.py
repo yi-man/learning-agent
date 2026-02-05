@@ -3,7 +3,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import chat, chat_openai
+from app.api import agents_react, chat, chat_openai
 from app.config import settings
 
 # 创建 FastAPI 应用
@@ -25,6 +25,7 @@ app.add_middleware(
 # 注册路由
 app.include_router(chat.router)
 app.include_router(chat_openai.router)
+app.include_router(agents_react.router)
 
 
 @app.get("/")
