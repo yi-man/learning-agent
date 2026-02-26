@@ -15,9 +15,19 @@ def test_settings_loads_from_env(monkeypatch):
     assert settings.llm_model_id == "env-model"
 
 
-def test_settings_has_defaults():
-    """测试默认值"""
-    settings = Settings(llm_api_key="required_key")
+def test_settings_has_defaults(monkeypatch):
+    """测试默认值（隔离 .env 与环境变量，仅验证代码中的默认值）"""
+    # 清除可能覆盖默认值的环境变量，避免本地 .env 或 shell 影响断言
+    for key in (
+        "LLM_API_ENDPOINT",
+        "LLM_MODEL_ID",
+        "LLM_TIMEOUT",
+        "API_HOST",
+        "API_PORT",
+    ):
+        monkeypatch.delenv(key, raising=False)
+    # 不加载 .env，仅用代码默认值
+    settings = Settings(_env_file=None, llm_api_key="required_key")
     assert (
         settings.llm_api_endpoint
         == "https://ark.cn-beijing.volces.com/api/v3/chat/completions"
